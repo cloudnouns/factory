@@ -1,6 +1,6 @@
-import { LayerData, Noun } from "../types";
+import { ArraySeed, DataLayer, LayerData, Seed } from "../types";
 
-export const getRandomSeed = (layerData: LayerData): Noun => {
+const getRandomSeed = (layerData: LayerData): Seed => {
   const { bgcolors, images } = layerData;
   const temporarySeed: any = {};
 
@@ -12,4 +12,20 @@ export const getRandomSeed = (layerData: LayerData): Noun => {
     background: Math.floor(Math.random() * bgcolors.length),
     ...temporarySeed,
   };
+};
+
+const seedToArray = (seed: Seed, layerData: LayerData): number[] => {
+  const fromConfig = Object.keys(layerData.images);
+  const arr = [seed.background];
+
+  fromConfig.forEach((trait) => {
+    arr.push(seed[trait as DataLayer]);
+  });
+
+  return arr;
+};
+
+export default {
+  getRandomSeed,
+  seedToArray,
 };
