@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler publish",
+    "deploy:prod": "wrangler publish -e prod"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.16.0",
     "wrangler": "^2.1.4"
