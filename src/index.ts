@@ -2,8 +2,8 @@ import Config from "../kit.config.js";
 import { Factory } from "./lib/index.js";
 
 const f = new Factory(Config.layers);
-const { helpers } = f;
+const { utils } = f;
 
-const seed = helpers.getRandomSeed();
-const seedArray = helpers.seedToArray(seed);
+const seed = utils.getRandomSeed();
+const seedArray = utils.seedToArray(seed);
 console.log(seedArray);

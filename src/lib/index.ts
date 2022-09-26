@@ -1,5 +1,5 @@
 import type { LayerData, Seed, PartialTraits } from "../types";
-import utils from "./utils.js";
+import helpers from "./helpers.js";
 
 export class Factory {
   private layerData: LayerData;
@@ -14,11 +14,11 @@ export class Factory {
 
   private buildItem() {}
 
-  helpers = {
-    getRandomSeed: () => utils.getRandomSeed(this.layerData),
+  utils = {
+    getRandomSeed: () => helpers.getRandomSeed(this.layerData),
     arrayToSeed: () => {},
     arrayToTraitNames: () => {},
-    seedToArray: (seed: Seed) => utils.seedToArray(seed, this.layerData),
+    seedToArray: (seed: Seed) => helpers.seedToArray(seed, this.layerData),
     seedToTraitNames: () => {},
     traitNamesToSeed: () => {},
     traitNamesToArray: () => {},

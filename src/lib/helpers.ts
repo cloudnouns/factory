@@ -1,4 +1,4 @@
-import { ArraySeed, DataLayer, LayerData, Seed } from "../types";
+import { DataLayer, LayerData, Seed } from "../types";
 
 const getRandomSeed = (layerData: LayerData): Seed => {
   const { bgcolors, images } = layerData;
@@ -15,10 +15,10 @@ const getRandomSeed = (layerData: LayerData): Seed => {
 };
 
 const seedToArray = (seed: Seed, layerData: LayerData): number[] => {
-  const fromConfig = Object.keys(layerData.images);
+  const keysFromConfig = Object.keys(layerData.images);
   const arr = [seed.background];
 
-  fromConfig.forEach((trait) => {
+  keysFromConfig.forEach((trait) => {
     arr.push(seed[trait as DataLayer]);
   });
 
