@@ -1,5 +1,5 @@
 import fs from "fs";
-import Config from "./kit.config.js";
+import Config from "./bolt.config.js";
 
 const { layers } = Config;
 

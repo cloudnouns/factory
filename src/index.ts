@@ -1,4 +1,4 @@
-import Config from "../kit.config.js";
+import Config from "../bolt.config.js";
 import { Factory } from "./lib/index.js";
 
 const f = new Factory(Config.layers);
