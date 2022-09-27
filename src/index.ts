@@ -28,3 +28,4 @@ const seedFromTraits = utils.traitsToSeed(traitsFromArray);
 //     "0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781"
 //   )
 // );
+console.log(f.create());

@@ -1,6 +1,6 @@
-import type { Layers, Seed, Traits, PartialTraits } from "../types";
+import type { Layers, Seed, Traits, PartialTraits, BoltItem } from "../types";
 import type { BigNumberish } from "@ethersproject/bignumber";
-import { getItemParts } from "./builder.js";
+import { buildSVG, getItemParts } from "./builder.js";
 import helpers from "./helpers.js";
 
 export class Factory {
@@ -21,7 +21,18 @@ export class Factory {
 
   private buildItem(seed: Seed, size?: number) {
     this.utils.validateSeed(seed);
+    const { palette } = this.layers;
     const { parts, background } = getItemParts(seed, this.layers);
+    const svg = buildSVG(parts, palette, background, size);
+    const traits = this.utils.seedToTraits(seed);
+
+    const item = {
+      ...traits,
+      seed,
+      dataUrl: "data:image/svg+xml;base64," + btoa(svg),
+    };
+
+    return item;
   }
 
   utils = {
@@ -36,11 +47,11 @@ export class Factory {
     arrayToSeed: (arr: number[]) => helpers.arrayToSeed(arr, this.layers),
     arrayToTraits: (arr: number[]) => helpers.arrayToTraits(arr, this.layers),
     seedToArray: (seed: Seed) => helpers.seedToArray(seed, this.layers),
-    seedToTraits: (seed: Seed) => helpers.seedToArray(seed, this.layers),
+    seedToTraits: (seed: Seed) => helpers.seedToTraits(seed, this.layers),
     traitsToSeed: (traits: Traits | PartialTraits) =>
       helpers.traitsToSeed(traits, this.layers),
     traitsToArray: (traits: Traits | PartialTraits) =>
-      helpers.traitsToSeed(traits, this.layers),
+      helpers.traitsToArray(traits, this.layers),
     validateSeed: (seed: Seed) => helpers.validateSeed(seed, this.layers),
   };
 }
