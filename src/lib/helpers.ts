@@ -44,7 +44,7 @@ const seedToArray = (seed: Seed, layers: Layers): number[] => {
 };
 
 const seedToTraits = (seed: Seed, layers: Layers): Traits => {
-  const names = Object.entries(seed).map(([layer, value]) => {
+  const traits = Object.entries(seed).map(([layer, value]) => {
     if (layer === "background") {
       return [layer, "#" + layers.bgcolors[value]];
     }
@@ -53,7 +53,7 @@ const seedToTraits = (seed: Seed, layers: Layers): Traits => {
     return [layer, image.filename];
   });
 
-  return Object.fromEntries(names);
+  return Object.fromEntries(traits);
 };
 
 const traitsToArray = (
