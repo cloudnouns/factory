@@ -4,7 +4,9 @@ export interface BoltConfig {
   layers: Layers;
 }
 
-export interface Noun extends Traits {
+export type Noun = BoltItem
+
+interface BoltItem extends Traits {
   dataUrl: string;
   seed: Seed;
 }

@@ -38,7 +38,9 @@ const configTemplate = `export interface BoltConfig {
   layers: Layers;
 }
 
-export interface **ITEM_LABEL** extends Traits {
+export type **ITEM_LABEL** = BoltItem
+
+interface BoltItem extends Traits {
   dataUrl: string;
   seed: Seed;
 }
