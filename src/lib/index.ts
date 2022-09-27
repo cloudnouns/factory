@@ -1,4 +1,4 @@
-import type { Layers, Seed, Traits, PartialTraits, BoltItem } from "../types";
+import type { Layers, Seed, Traits, PartialTraits } from "../types";
 import type { BigNumberish } from "@ethersproject/bignumber";
 import { buildSVG, getItemParts } from "./builder.js";
 import helpers from "./helpers.js";

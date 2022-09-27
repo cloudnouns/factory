@@ -16,7 +16,7 @@ Object.entries(layers.images).forEach(([label, items]) => {
   const typeLabel =
     label.charAt(0).toUpperCase() + label.slice(1).toLowerCase() + "Layer";
   labels.push(label);
-  typeLabels.push(`${label}?: ${typeLabel};`);
+  typeLabels.push(`${label}: ${typeLabel};`);
 
   const typeString = `type ${typeLabel} = \n\t| `;
   const types = items
@@ -34,36 +34,39 @@ Object.entries(layers.images).forEach(([label, items]) => {
  */
 const configTemplate = `export interface BoltConfig {
   item: string;
-	options?: { [key: string]: string };
+	options?: { [key: string]: any };
   layers: Layers;
 }
 
-export type **ITEM_LABEL** = BoltItem
-
-interface BoltItem extends Traits {
+interface **ITEM_LABEL** extends Traits {
   dataUrl: string;
   seed: Seed;
 }
 
+type Traits = {
+	background: BackgroundColor;
+	**LAYER_TYPE_LABELS**
+ };
+
+type Seed = { [key in Layer]: number };
+type ArraySeed = [**ARRAY_SEED**];
+type PartialTraits = { [T in keyof Traits]?: Traits[T] };
+
+type Layer = "background" | DataLayer;
+type DataLayer = **DATA_LAYER_LABELS**;
 type Layers = {
   bgcolors: string[];
   palette: string[];
   images: Images;
 };
-type Layer = "background" | DataLayer;
-type DataLayer = **DATA_LAYER_LABELS**;
-type Images = { [key in DataLayer]: Image[] };
-type Image = {
+
+type Images = { [key in DataLayer]: EncodedImage[] };
+type EncodedImage = {
   filename: string;
   data: string;
 };
-type Seed = { [key in Layer]: number };
-type ArraySeed = [**ARRAY_SEED**];
-type Traits = { [key in Layer]: string };
-type PartialTraits = {
-	background?: BackgroundColor;
-	**LAYER_TYPE_LABELS**
-};
+
+// Types below are generated from config file
 
 **DATA_LAYER_TYPES**
 `;
