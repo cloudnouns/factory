@@ -20,9 +20,9 @@ const arrayToSeed = (array: number[], layerData: LayerData): Seed => {
   return Object.fromEntries(entries);
 };
 
-const arrayToTraitNames = (array: number[], layerData: LayerData) => {
+const arrayToTraits = (array: number[], layerData: LayerData) => {
   const seed = arrayToSeed(array, layerData);
-  return seedToTraitNames(seed, layerData);
+  return seedToTraits(seed, layerData);
 };
 
 const seedToArray = (seed: Seed, layerData: LayerData): number[] => {
@@ -36,7 +36,7 @@ const seedToArray = (seed: Seed, layerData: LayerData): number[] => {
   return arr;
 };
 
-const seedToTraitNames = (seed: Seed, layerData: LayerData): Traits => {
+const seedToTraits = (seed: Seed, layerData: LayerData): Traits => {
   const names = Object.entries(seed).map(([layer, value]) => {
     if (layer === "background") {
       return [layer, "#" + layerData.bgcolors[value]];
@@ -49,7 +49,7 @@ const seedToTraitNames = (seed: Seed, layerData: LayerData): Traits => {
   return Object.fromEntries(names);
 };
 
-const traitNamesToArray = (traits: Traits, layerData: LayerData): number[] => {
+const traitsToArray = (traits: Traits, layerData: LayerData): number[] => {
   const arr = Object.entries(traits).map(([layer, value]) => {
     if (layer === "background") {
       value = value.replace("#", "");
@@ -64,16 +64,17 @@ const traitNamesToArray = (traits: Traits, layerData: LayerData): number[] => {
   return arr;
 };
 
-const traitNamesToSeed = (traits: Traits, layerData: LayerData): Seed => {
-  const arr = traitNamesToArray(traits, layerData);
+const traitsToSeed = (traits: Traits, layerData: LayerData): Seed => {
+  const arr = traitsToArray(traits, layerData);
   return arrayToSeed(arr, layerData);
 };
 
 export default {
   getRandomSeed,
   arrayToSeed,
-  arrayToTraitNames,
+  arrayToTraits,
   seedToArray,
-  seedToTraitNames,
-  traitNamesToSeed,
+  seedToTraits,
+  traitsToArray,
+  traitsToSeed,
 };
