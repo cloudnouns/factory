@@ -1,5 +1,4 @@
-import type { Layers, DataLayer, Seed } from "../types";
-import type { DecodedImage } from "../types/builder";
+import type { Layers, DataLayer, Seed, DecodedImage } from "../types";
 import { BigNumber, type BigNumberish } from "@ethersproject/bignumber";
 
 export const getItemParts = (seed: Seed, layers: Layers) => {

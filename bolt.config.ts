@@ -1,10 +1,12 @@
-// import ImageData from "./nouns-image-data.json" assert { type: "json" };
-import ImageData from "./wizards.json" assert { type: "json" };
+import ImageData from "./nouns-image-data.json" assert { type: "json" };
+// import ImageData from "./wizards.json" assert { type: "json" };
 
 const config = {
-  item: "Wizard",
+  item: "Noun",
   layers: ImageData,
-  dir: "./src/pkg",
+  options: {
+    dir: "./src/pkg",
+  },
 };
 
 export default config;

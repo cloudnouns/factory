@@ -46,25 +46,39 @@ interface **ITEM_LABEL** extends Traits {
 type Traits = {
 	background: BackgroundColor;
 	**LAYER_TYPE_LABELS**
- };
+ }
 
 type Seed = { [key in Layer]: number };
 type ArraySeed = [**ARRAY_SEED**];
-type PartialTraits = { [T in keyof Traits]?: Traits[T] };
+type PartialTraits = { [T in keyof Traits]?: Traits[T] }
 
-type Layer = "background" | DataLayer;
 type DataLayer = **DATA_LAYER_LABELS**;
+type Layer = "background" | DataLayer;
 type Layers = {
   bgcolors: string[];
   palette: string[];
   images: Images;
-};
+}
 
 type Images = { [key in DataLayer]: EncodedImage[] };
+
 type EncodedImage = {
   filename: string;
   data: string;
-};
+}
+
+export interface DecodedImage {
+  paletteIndex: number;
+  bounds: ImageBounds;
+  rects: [length: number, colorIndex: number][];
+}
+
+interface ImageBounds {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
 
 // Types below are generated from config file
 

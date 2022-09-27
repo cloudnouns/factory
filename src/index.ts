@@ -28,5 +28,6 @@ const seedFromTraits = utils.traitsToSeed(traitsFromArray);
 //     "0x73d88d376f6b4d232d70dc950d9515fad3b5aa241937e362fdbfd74d1c901781"
 //   )
 // );
-const wiz = f.create({ background: "#c5a3e2", mouth: "mouth_5" });
-console.log(wiz.eye);
+// const wiz = f.create({ background: "#c5a3e2", mouth: "mouth_5" });
+// console.log(wiz.eye);
+console.log(f.create());
