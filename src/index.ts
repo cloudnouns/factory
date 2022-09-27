@@ -12,4 +12,5 @@ const seedFromTraits = utils.traitsToSeed(traitsFromArray);
 // console.log(seedArray);
 // console.log(seedFromArray);
 // console.log(traitsFromArray);
-console.log(seedFromTraits);
+// console.log(seedFromTraits);
+console.log(f.create({ background: "#d5d7e1", heads: "head-zebra" }));

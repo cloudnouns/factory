@@ -1,7 +1,14 @@
-import { ArraySeed, DataLayer, LayerData, Seed, Traits } from "../types";
+import {
+  ArraySeed,
+  DataLayer,
+  Layers,
+  PartialTraits,
+  Seed,
+  Traits,
+} from "../types";
 
-const getRandomSeed = (layerData: LayerData): Seed => {
-  const { bgcolors, images } = layerData;
+const getRandomSeed = (layers: Layers): Seed => {
+  const { bgcolors, images } = layers;
   const temporarySeed: any = {};
 
   Object.entries(images).forEach(([trait, items]) => {
@@ -14,19 +21,19 @@ const getRandomSeed = (layerData: LayerData): Seed => {
   };
 };
 
-const arrayToSeed = (array: number[], layerData: LayerData): Seed => {
-  const layers = ["background", ...Object.keys(layerData.images)];
-  const entries = layers.map((layer, i) => [layer, array[i]]);
+const arrayToSeed = (array: number[], layers: Layers): Seed => {
+  const arr = ["background", ...Object.keys(layers.images)];
+  const entries = arr.map((layer, i) => [layer, array[i]]);
   return Object.fromEntries(entries);
 };
 
-const arrayToTraits = (array: number[], layerData: LayerData) => {
-  const seed = arrayToSeed(array, layerData);
-  return seedToTraits(seed, layerData);
+const arrayToTraits = (array: number[], layers: Layers) => {
+  const seed = arrayToSeed(array, layers);
+  return seedToTraits(seed, layers);
 };
 
-const seedToArray = (seed: Seed, layerData: LayerData): number[] => {
-  const keys = Object.keys(layerData.images);
+const seedToArray = (seed: Seed, layers: Layers): number[] => {
+  const keys = Object.keys(layers.images);
   const arr = [seed.background];
 
   keys.forEach((trait) => {
@@ -36,12 +43,12 @@ const seedToArray = (seed: Seed, layerData: LayerData): number[] => {
   return arr;
 };
 
-const seedToTraits = (seed: Seed, layerData: LayerData): Traits => {
+const seedToTraits = (seed: Seed, layers: Layers): Traits => {
   const names = Object.entries(seed).map(([layer, value]) => {
     if (layer === "background") {
-      return [layer, "#" + layerData.bgcolors[value]];
+      return [layer, "#" + layers.bgcolors[value]];
     }
-    const { images } = layerData;
+    const { images } = layers;
     const image = images[layer as DataLayer][value];
     return [layer, image.filename];
   });
@@ -49,24 +56,33 @@ const seedToTraits = (seed: Seed, layerData: LayerData): Traits => {
   return Object.fromEntries(names);
 };
 
-const traitsToArray = (traits: Traits, layerData: LayerData): number[] => {
-  const arr = Object.entries(traits).map(([layer, value]) => {
-    if (layer === "background") {
-      value = value.replace("#", "");
-      return layerData.bgcolors.findIndex((color) => value === color);
-    }
-    const { images } = layerData;
-    const index = images[layer as DataLayer].findIndex(
-      (image) => value === image.filename
-    );
-    return index;
-  });
-  return arr;
+const traitsToArray = (
+  traits: Traits | PartialTraits,
+  layers: Layers
+): number[] => {
+  const seed = traitsToSeed(traits, layers);
+  return seedToArray(seed, layers);
 };
 
-const traitsToSeed = (traits: Traits, layerData: LayerData): Seed => {
-  const arr = traitsToArray(traits, layerData);
-  return arrayToSeed(arr, layerData);
+const traitsToSeed = (traits: Traits | PartialTraits, layers: Layers): Seed => {
+  const seed = getRandomSeed(layers);
+
+  Object.entries(traits).forEach(([layer, value]) => {
+    if (layer === "background") {
+      const index = layers.bgcolors.findIndex(
+        (color) => value.replace("#", "") === color
+      );
+      seed.background = index;
+    } else if (Object.keys(seed).includes(layer)) {
+      const { images } = layers;
+      const index = images[layer as DataLayer].findIndex(
+        (image) => value === image.filename
+      );
+      seed[layer as DataLayer] = index;
+    }
+  });
+
+  return seed;
 };
 
 export default {

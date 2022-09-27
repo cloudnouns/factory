@@ -1,18 +1,15 @@
-import type { LayerData, Seed, Traits, PartialTraits } from "../types";
+import type { Layers, Seed, Traits, PartialTraits } from "../types";
 import helpers from "./helpers.js";
 
 export class Factory {
-  private layerData: LayerData;
+  private layerData: Layers;
 
-  constructor(layerData: LayerData) {
+  constructor(layerData: Layers) {
     this.layerData = layerData;
   }
 
   create(traits: PartialTraits = {}, options?: { size?: number }) {
-    const seed = this.utils.getRandomSeed();
-    if (Object.keys(traits).length) {
-      // Object.entries(traits).map();
-    }
+    return this.utils.traitsToSeed(traits);
   }
 
   createFromSeed(seed: Seed, options?: { size?: number }) {}
@@ -26,9 +23,9 @@ export class Factory {
       helpers.arrayToTraits(arr, this.layerData),
     seedToArray: (seed: Seed) => helpers.seedToArray(seed, this.layerData),
     seedToTraits: (seed: Seed) => helpers.seedToArray(seed, this.layerData),
-    traitsToSeed: (traits: Traits) =>
+    traitsToSeed: (traits: Traits | PartialTraits) =>
       helpers.traitsToSeed(traits, this.layerData),
-    traitsToArray: (traits: Traits) =>
+    traitsToArray: (traits: Traits | PartialTraits) =>
       helpers.traitsToSeed(traits, this.layerData),
   };
 }

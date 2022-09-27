@@ -35,7 +35,7 @@ Object.entries(layers.images).forEach(([label, items]) => {
 const configTemplate = `export interface BoltConfig {
   item: string;
 	options?: { [key: string]: string };
-  layers: LayerData;
+  layers: Layers;
 }
 
 export interface **ITEM_LABEL** extends Traits {
@@ -43,7 +43,7 @@ export interface **ITEM_LABEL** extends Traits {
   seed: Seed;
 }
 
-type LayerData = {
+type Layers = {
   bgcolors: string[];
   palette: string[];
   images: Images;

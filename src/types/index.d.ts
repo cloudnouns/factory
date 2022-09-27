@@ -1,7 +1,7 @@
 export interface BoltConfig {
   item: string;
 	options?: { [key: string]: string };
-  layers: LayerData;
+  layers: Layers;
 }
 
 export interface Noun extends Traits {
@@ -9,7 +9,7 @@ export interface Noun extends Traits {
   seed: Seed;
 }
 
-type LayerData = {
+type Layers = {
   bgcolors: string[];
   palette: string[];
   images: Images;
