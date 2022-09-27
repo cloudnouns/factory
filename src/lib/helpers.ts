@@ -1,4 +1,39 @@
-import { DataLayer, Layers, PartialTraits, Seed, Traits } from "../types";
+import type { DataLayer, Layers, PartialTraits, Seed, Traits } from "../types";
+import type { BigNumberish } from "@ethersproject/bignumber";
+import { keccak256 as solidityKeccak256 } from "@ethersproject/solidity";
+import { getPseudorandomPart } from "./builder.js";
+
+const getSeedFromBlockHash = (
+  id: BigNumberish,
+  blockHash: string,
+  layers: Layers
+): Seed => {
+  const { bgcolors, images } = layers;
+  const pseudorandomness = solidityKeccak256(
+    ["bytes32", "uint256"],
+    [blockHash, id]
+  );
+  const keys = ["background", ...Object.keys(images)];
+  const seed: any = {};
+
+  keys.forEach((key, i) => {
+    if (key === "background") {
+      seed.background = getPseudorandomPart(
+        pseudorandomness,
+        bgcolors.length,
+        0
+      );
+    } else {
+      seed[key] = getPseudorandomPart(
+        pseudorandomness,
+        images[key as DataLayer].length,
+        i * 48
+      );
+    }
+  });
+
+  return seed;
+};
 
 const getRandomSeed = (layers: Layers): Seed => {
   const { bgcolors, images } = layers;
@@ -110,6 +145,7 @@ const validateSeed = (seed: Seed, layers: Layers): void => {
 };
 
 export default {
+  getSeedFromBlockHash,
   getRandomSeed,
   arrayToSeed,
   arrayToTraits,
