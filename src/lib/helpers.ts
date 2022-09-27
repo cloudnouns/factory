@@ -1,11 +1,4 @@
-import {
-  ArraySeed,
-  DataLayer,
-  Layers,
-  PartialTraits,
-  Seed,
-  Traits,
-} from "../types";
+import { DataLayer, Layers, PartialTraits, Seed, Traits } from "../types";
 
 const getRandomSeed = (layers: Layers): Seed => {
   const { bgcolors, images } = layers;
@@ -85,6 +78,37 @@ const traitsToSeed = (traits: Traits | PartialTraits, layers: Layers): Seed => {
   return seed;
 };
 
+const validateSeed = (seed: Seed, layers: Layers): void => {
+  const { bgcolors, images } = layers;
+  const seedKeys = Object.keys(seed);
+  const layerKeys = ["background", ...Object.keys(images)];
+
+  if (seedKeys.length < layerKeys.length) {
+    const missingKeys = layerKeys.filter((key) => !seedKeys.includes(key));
+    throw new Error(
+      `invalid_seed. seed is missing following properties: ${missingKeys.join(
+        ", "
+      )}`
+    );
+  }
+
+  Object.entries(seed).forEach(([layer, value]) => {
+    try {
+      if (layer === "background") {
+        const color = bgcolors[value];
+        if (!color) throw new Error();
+      } else {
+        const image = images[layer as DataLayer][value];
+        if (!image) throw new Error();
+      }
+    } catch (err) {
+      throw new Error(
+        `invalid_seed. bad property or value: { ..., ${layer}: ${value} }`
+      );
+    }
+  });
+};
+
 export default {
   getRandomSeed,
   arrayToSeed,
@@ -93,4 +117,5 @@ export default {
   seedToTraits,
   traitsToArray,
   traitsToSeed,
+  validateSeed,
 };

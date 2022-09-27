@@ -1,4 +1,5 @@
 import type { Layers, Seed, Traits, PartialTraits } from "../types";
+import { getItemParts } from "./builder.js";
 import helpers from "./helpers.js";
 
 export class Factory {
@@ -10,11 +11,17 @@ export class Factory {
 
   create(traits: PartialTraits = {}, options?: { size?: number }) {
     const seed = this.utils.traitsToSeed(traits);
+    return this.buildItem(seed, options?.size);
   }
 
-  createFromSeed(seed: Seed, options?: { size?: number }) {}
+  createFromSeed(seed: Seed, options?: { size?: number }) {
+    return this.buildItem(seed, options?.size);
+  }
 
-  private buildItem() {}
+  private buildItem(seed: Seed, size?: number) {
+    this.utils.validateSeed(seed);
+    const { parts, background } = getItemParts(seed, this.layers);
+  }
 
   utils = {
     getRandomSeed: () => helpers.getRandomSeed(this.layers),
@@ -26,5 +33,6 @@ export class Factory {
       helpers.traitsToSeed(traits, this.layers),
     traitsToArray: (traits: Traits | PartialTraits) =>
       helpers.traitsToSeed(traits, this.layers),
+    validateSeed: (seed: Seed) => helpers.validateSeed(seed, this.layers),
   };
 }
