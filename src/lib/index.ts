@@ -2,14 +2,14 @@ import type { Layers, Seed, Traits, PartialTraits } from "../types";
 import helpers from "./helpers.js";
 
 export class Factory {
-  private layerData: Layers;
+  private layers: Layers;
 
-  constructor(layerData: Layers) {
-    this.layerData = layerData;
+  constructor(layers: Layers) {
+    this.layers = layers;
   }
 
   create(traits: PartialTraits = {}, options?: { size?: number }) {
-    return this.utils.traitsToSeed(traits);
+    const seed = this.utils.traitsToSeed(traits);
   }
 
   createFromSeed(seed: Seed, options?: { size?: number }) {}
@@ -17,15 +17,14 @@ export class Factory {
   private buildItem() {}
 
   utils = {
-    getRandomSeed: () => helpers.getRandomSeed(this.layerData),
-    arrayToSeed: (arr: number[]) => helpers.arrayToSeed(arr, this.layerData),
-    arrayToTraits: (arr: number[]) =>
-      helpers.arrayToTraits(arr, this.layerData),
-    seedToArray: (seed: Seed) => helpers.seedToArray(seed, this.layerData),
-    seedToTraits: (seed: Seed) => helpers.seedToArray(seed, this.layerData),
+    getRandomSeed: () => helpers.getRandomSeed(this.layers),
+    arrayToSeed: (arr: number[]) => helpers.arrayToSeed(arr, this.layers),
+    arrayToTraits: (arr: number[]) => helpers.arrayToTraits(arr, this.layers),
+    seedToArray: (seed: Seed) => helpers.seedToArray(seed, this.layers),
+    seedToTraits: (seed: Seed) => helpers.seedToArray(seed, this.layers),
     traitsToSeed: (traits: Traits | PartialTraits) =>
-      helpers.traitsToSeed(traits, this.layerData),
+      helpers.traitsToSeed(traits, this.layers),
     traitsToArray: (traits: Traits | PartialTraits) =>
-      helpers.traitsToSeed(traits, this.layerData),
+      helpers.traitsToSeed(traits, this.layers),
   };
 }
