@@ -4,8 +4,12 @@
   "main": "index.js",
   "type": "module",
   "license": "MIT",
+  "bin": {
+    "bolt": "cli.js"
+  },
   "scripts": {
-    "build": "vite build",
+    "watch": "tsc --watch",
+    "build": "rimraf ./dist && tsc && rm dist/cli.d.ts",
     "go": "ts-node-esm ./script.ts",
     "try": "ts-node-esm ./api/src/index.ts"
   },
