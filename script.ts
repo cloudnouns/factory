@@ -1,7 +1,10 @@
 import fs from "fs";
 import Config from "./bolt.config.js";
 
-const { layers } = Config;
+const Item = Config.items[0];
+const { item, config } = Item;
+
+const layers = config;
 
 const labels: string[] = [];
 const typeLabels: string[] = [];
@@ -86,7 +89,7 @@ interface ImageBounds {
 `;
 
 const template = configTemplate
-  .replace("**ITEM_LABEL**", Config.item)
+  .replace("**ITEM_LABEL**", item)
   .replace(
     "**DATA_LAYER_LABELS**",
     labels.map((label) => `"${label}"`).join(" | ")

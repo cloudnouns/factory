@@ -7,7 +7,7 @@
   "scripts": {
     "build": "vite build",
     "go": "ts-node-esm ./script.ts",
-    "try": "ts-node-esm ./src/index.ts"
+    "try": "ts-node-esm ./api/src/index.ts"
   },
   "devDependencies": {
     "@types/node": "^18.7.18",
