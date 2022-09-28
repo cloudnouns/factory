@@ -6,6 +6,7 @@ const config = {
   layers: ImageData,
   options: {
     dir: "./src/pkg",
+    rpc: "",
   },
 };
 
