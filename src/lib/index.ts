@@ -1,7 +1,7 @@
-import type { Layers, Seed, Traits, PartialTraits } from "../types";
+import type { Layers, Seed, Traits, PartialTraits, DataLayer } from "../types";
 import type { BigNumberish } from "@ethersproject/bignumber";
-import { buildSVG, getItemParts } from "./builder.js";
-import helpers from "./helpers.js";
+import { keccak256 as solidityKeccak256 } from "@ethersproject/solidity";
+import { buildSVG, getItemParts, getPseudorandomPart } from "./builder.js";
 
 export class Factory {
   private layers: Layers;
@@ -45,14 +45,49 @@ export class Factory {
         blockHash =
           "0x305837d283efbc5a8ea53934fb122ac88473c68c1db0ebe2a2279f09f5772878";
       }
-      return helpers.getSeedFromBlockHash(id, blockHash, this.layers);
+
+      const { bgcolors, images } = this.layers;
+      const pseudorandomness = solidityKeccak256(
+        ["bytes32", "uint256"],
+        [blockHash, id]
+      );
+      const keys = ["background", ...Object.keys(images)];
+      const seed: any = {};
+
+      keys.forEach((key, i) => {
+        if (key === "background") {
+          seed.background = getPseudorandomPart(
+            pseudorandomness,
+            bgcolors.length,
+            0
+          );
+        } else {
+          seed[key] = getPseudorandomPart(
+            pseudorandomness,
+            images[key as DataLayer].length,
+            i * 48
+          );
+        }
+      });
+
+      return seed;
     },
 
     /** Generates a random seed
      * @returns Seed
      */
     getRandomSeed: (): Seed => {
-      return helpers.getRandomSeed(this.layers);
+      const { bgcolors, images } = this.layers;
+      const temporarySeed: any = {};
+
+      Object.entries(images).forEach(([trait, items]) => {
+        temporarySeed[trait] = Math.floor(Math.random() * items.length);
+      });
+
+      return {
+        background: Math.floor(Math.random() * bgcolors.length),
+        ...temporarySeed,
+      };
     },
 
     /** Transforms seed array into a seed object
@@ -60,7 +95,9 @@ export class Factory {
      * @returns Seed
      */
     arrayToSeed: (arr: number[]): Seed => {
-      return helpers.arrayToSeed(arr, this.layers);
+      const keys = ["background", ...Object.keys(this.layers.images)];
+      const entries = keys.map((layer, i) => [layer, arr[i]]);
+      return Object.fromEntries(entries);
     },
 
     /** Transforms seed array into a traits object
@@ -68,7 +105,8 @@ export class Factory {
      * @returns Traits
      */
     arrayToTraits: (arr: number[]): Traits => {
-      return helpers.arrayToTraits(arr, this.layers);
+      const seed = this.utils.arrayToSeed(arr);
+      return this.utils.seedToTraits(seed);
     },
 
     /** Transforms seed object into a seed array
@@ -76,7 +114,14 @@ export class Factory {
      * @returns number[]
      */
     seedToArray: (seed: Seed): number[] => {
-      return helpers.seedToArray(seed, this.layers);
+      const keys = Object.keys(this.layers.images);
+      const arr = [seed.background];
+
+      keys.forEach((trait) => {
+        arr.push(seed[trait as DataLayer]);
+      });
+
+      return arr;
     },
 
     /** Transforms seed object into a traits object
@@ -84,15 +129,16 @@ export class Factory {
      * @returns Traits
      */
     seedToTraits: (seed: Seed): Traits => {
-      return helpers.seedToTraits(seed, this.layers);
-    },
+      const traits = Object.entries(seed).map(([layer, value]) => {
+        if (layer === "background") {
+          return [layer, "#" + this.layers.bgcolors[value]];
+        }
+        const { images } = this.layers;
+        const image = images[layer as DataLayer][value];
+        return [layer, image.filename];
+      });
 
-    /** Transforms traits object into a seed object
-     * @param {Traits|PartialTraits} traits
-     * @returns Seed
-     */
-    traitsToSeed: (traits: Traits | PartialTraits): Seed => {
-      return helpers.traitsToSeed(traits, this.layers);
+      return Object.fromEntries(traits);
     },
 
     /** Transforms traits object into a seed array
@@ -100,7 +146,33 @@ export class Factory {
      * @returns number[]
      */
     traitsToArray: (traits: Traits | PartialTraits): number[] => {
-      return helpers.traitsToArray(traits, this.layers);
+      const seed = this.utils.traitsToSeed(traits);
+      return this.utils.seedToArray(seed);
+    },
+
+    /** Transforms traits object into a seed object
+     * @param {Traits|PartialTraits} traits
+     * @returns Seed
+     */
+    traitsToSeed: (traits: Traits | PartialTraits): Seed => {
+      const seed = this.utils.getRandomSeed();
+
+      Object.entries(traits).forEach(([layer, value]) => {
+        if (layer === "background") {
+          const index = this.layers.bgcolors.findIndex(
+            (color) => value.replace("#", "") === color
+          );
+          seed.background = index;
+        } else if (Object.keys(seed).includes(layer)) {
+          const { images } = this.layers;
+          const index = images[layer as DataLayer].findIndex(
+            (image) => value === image.filename
+          );
+          seed[layer as DataLayer] = index;
+        }
+      });
+
+      return seed;
     },
 
     /** Confirms validity of given seed
@@ -108,7 +180,34 @@ export class Factory {
      * @throws if provided Seed has unknown or missing keys, or value can't be located
      */
     validateSeed: (seed: Seed): void => {
-      return helpers.validateSeed(seed, this.layers);
+      const { bgcolors, images } = this.layers;
+      const seedKeys = Object.keys(seed);
+      const layerKeys = ["background", ...Object.keys(images)];
+
+      if (seedKeys.length < layerKeys.length) {
+        const missingKeys = layerKeys.filter((key) => !seedKeys.includes(key));
+        throw new Error(
+          `invalid_seed. seed is missing following properties: ${missingKeys.join(
+            ", "
+          )}`
+        );
+      }
+
+      Object.entries(seed).forEach(([layer, value]) => {
+        try {
+          if (layer === "background") {
+            const color = bgcolors[value];
+            if (!color) throw new Error();
+          } else {
+            const image = images[layer as DataLayer][value];
+            if (!image) throw new Error();
+          }
+        } catch (err) {
+          throw new Error(
+            `invalid_seed. bad property or value: { ..., ${layer}: ${value} }`
+          );
+        }
+      });
     },
   };
 }
