@@ -21,18 +21,17 @@ export class Factory {
 
   private buildItem(seed: Seed, size?: number) {
     this.utils.validateSeed(seed);
+
     const { palette } = this.layers;
     const { parts, background } = getItemParts(seed, this.layers);
     const svg = buildSVG(parts, palette, background, size);
     const traits = this.utils.seedToTraits(seed);
 
-    const item = {
+    return {
       ...traits,
       seed,
       dataUrl: "data:image/svg+xml;base64," + btoa(svg),
     };
-
-    return item;
   }
 
   utils = {
