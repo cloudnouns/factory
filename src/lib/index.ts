@@ -38,6 +38,7 @@ export class Factory {
     /** Emulates Noun.sol to generate a pseudorandom seed
      * @param {BigNumberish} id
      * @param {string} [blockHash]
+     * @returns Seed
      */
     getSeedFromBlockHash: (id: BigNumberish, blockHash?: string): Seed => {
       if (!blockHash) {
@@ -47,7 +48,9 @@ export class Factory {
       return helpers.getSeedFromBlockHash(id, blockHash, this.layers);
     },
 
-    /** Generates a random seed */
+    /** Generates a random seed
+     * @returns Seed
+     */
     getRandomSeed: (): Seed => {
       return helpers.getRandomSeed(this.layers);
     },
