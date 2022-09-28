@@ -6,7 +6,7 @@
 //   },
 // };
 
-import { Factory } from "../../src/index.js";
+import { Factory } from "../../dist/index.js";
 import WizardConfig from "../../wizards.json" assert { type: "json" };
 
 const hogwarts = new Factory(WizardConfig);

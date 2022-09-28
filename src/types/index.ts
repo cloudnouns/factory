@@ -4,12 +4,12 @@ export interface BoltConfig {
   layers: Layers;
 }
 
-interface Wizard extends Traits {
+export interface Wizard extends Traits {
   dataUrl: string;
   seed: Seed;
 }
 
-type Traits = {
+export type Traits = {
 	background: BackgroundColor;
 	skin: SkinLayer;
 	cloth: ClothLayer;
@@ -21,13 +21,13 @@ type Traits = {
 	one: OneLayer;
  }
 
-type Seed = { [key in Layer]: number };
-type ArraySeed = [number, number, number, number, number, number, number, number, number];
-type PartialTraits = { [T in keyof Traits]?: Traits[T] }
+export type Seed = { [key in Layer]: number };
+export type ArraySeed = [number, number, number, number, number, number, number, number, number];
+export type PartialTraits = { [T in keyof Traits]?: Traits[T] }
 
-type DataLayer = "skin" | "cloth" | "eye" | "mouth" | "acc" | "item" | "hat" | "one";
-type Layer = "background" | DataLayer;
-type Layers = {
+export type DataLayer = "skin" | "cloth" | "eye" | "mouth" | "acc" | "item" | "hat" | "one";
+export type Layer = "background" | DataLayer;
+export type Layers = {
   bgcolors: string[];
   palette: string[];
   images: Images;
@@ -55,12 +55,12 @@ interface ImageBounds {
 
 // Types below are generated from config file
 
-type BackgroundColor = 
+export type BackgroundColor = 
 	| "#c5a3e2"
 	| "#a4addd"
 	| "#e0a4ad";
 
-type SkinLayer = 
+export type SkinLayer = 
 	| 'skin_1'
 	| 'skin_2'
 	| 'skin_3'
@@ -75,7 +75,7 @@ type SkinLayer =
 	| 'skin_12'
 	| 'skin_13';
 
-type ClothLayer = 
+export type ClothLayer = 
 	| 'cloth_1'
 	| 'cloth_2'
 	| 'cloth_3'
@@ -97,7 +97,7 @@ type ClothLayer =
 	| 'cloth_19'
 	| 'cloth_20';
 
-type EyeLayer = 
+export type EyeLayer = 
 	| 'eye_1'
 	| 'eye_2'
 	| 'eye_3'
@@ -106,7 +106,7 @@ type EyeLayer =
 	| 'eye_6'
 	| 'eye_7';
 
-type MouthLayer = 
+export type MouthLayer = 
 	| 'mouth_1'
 	| 'mouth_2'
 	| 'mouth_3'
@@ -124,7 +124,7 @@ type MouthLayer =
 	| 'mouth_15'
 	| 'mouth_16';
 
-type AccLayer = 
+export type AccLayer = 
 	| 'acc_1'
 	| 'acc_2'
 	| 'acc_3'
@@ -134,7 +134,7 @@ type AccLayer =
 	| 'acc_7'
 	| 'acc_8';
 
-type ItemLayer = 
+export type ItemLayer = 
 	| 'item_1'
 	| 'item_2'
 	| 'item_3'
@@ -145,10 +145,10 @@ type ItemLayer =
 	| 'item_8'
 	| 'item_9';
 
-type HatLayer = 
+export type HatLayer = 
 	| 'hat_1';
 
-type OneLayer = 
+export type OneLayer = 
 	| 'one_1'
 	| 'one_2'
 	| 'one_3'

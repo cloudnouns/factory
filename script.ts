@@ -13,15 +13,15 @@ const typeOpts: string[] = [];
 const bgTypes = layers.bgcolors
   .map((color: string) => `"#${color.toLowerCase().replace(/#/g, "")}"`)
   .join("\n\t| ");
-typeOpts.push("type BackgroundColor = \n\t| " + bgTypes + ";");
+typeOpts.push("export type BackgroundColor = \n\t| " + bgTypes + ";");
 
 Object.entries(layers.images).forEach(([label, items]) => {
-  const typeLabel =
-    label.charAt(0).toUpperCase() + label.slice(1).toLowerCase() + "Layer";
+  const firstLetter = label.charAt(0).toUpperCase();
+  const typeLabel = firstLetter + label.slice(1).toLowerCase() + "Layer";
   labels.push(label);
   typeLabels.push(`${label}: ${typeLabel};`);
 
-  const typeString = `type ${typeLabel} = \n\t| `;
+  const typeString = `export type ${typeLabel} = \n\t| `;
   const types = items
     .map(({ filename }) => `'${filename.toLowerCase().replace(/ /g, "-")}'`)
     .join("\n\t| ");
@@ -41,23 +41,23 @@ const configTemplate = `export interface BoltConfig {
   layers: Layers;
 }
 
-interface **ITEM_LABEL** extends Traits {
+export interface **ITEM_LABEL** extends Traits {
   dataUrl: string;
   seed: Seed;
 }
 
-type Traits = {
+export type Traits = {
 	background: BackgroundColor;
 	**LAYER_TYPE_LABELS**
  }
 
-type Seed = { [key in Layer]: number };
-type ArraySeed = [**ARRAY_SEED**];
-type PartialTraits = { [T in keyof Traits]?: Traits[T] }
+export type Seed = { [key in Layer]: number };
+export type ArraySeed = [**ARRAY_SEED**];
+export type PartialTraits = { [T in keyof Traits]?: Traits[T] }
 
-type DataLayer = **DATA_LAYER_LABELS**;
-type Layer = "background" | DataLayer;
-type Layers = {
+export type DataLayer = **DATA_LAYER_LABELS**;
+export type Layer = "background" | DataLayer;
+export type Layers = {
   bgcolors: string[];
   palette: string[];
   images: Images;
@@ -101,6 +101,6 @@ const template = configTemplate
   .replace("**LAYER_TYPE_LABELS**", typeLabels.join("\n\t"))
   .replace("**DATA_LAYER_TYPES**", typeOpts.join("\n\n"));
 
-fs.writeFile("./src/types/index.d.ts", template, (err) => {
+fs.writeFile("./src/types/index.ts", template, (err) => {
   if (err) throw err;
 });
