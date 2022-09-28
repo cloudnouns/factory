@@ -9,7 +9,7 @@
   },
   "scripts": {
     "watch": "tsc --watch",
-    "build": "rimraf ./dist && tsc && rm dist/cli.d.ts",
+    "build": "rimraf ./dist && tsc && rm dist/cli.d.ts && chmod +x dist/cli.js",
     "go": "ts-node-esm ./script.ts",
     "try": "ts-node-esm ./api/src/index.ts"
   },
