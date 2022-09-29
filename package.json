@@ -11,7 +11,8 @@
     "watch": "tsc --watch",
     "build": "rimraf ./dist && tsc && rm dist/cli.d.ts && chmod +x dist/cli.js",
     "go": "ts-node-esm ./script.ts",
-    "try": "ts-node-esm ./api/src/index.ts"
+    "try": "ts-node-esm ./api/src/index.ts",
+    "now": "yarn build && npx . init"
   },
   "devDependencies": {
     "@types/node": "^18.7.18",
