@@ -58,11 +58,26 @@ interface ImageBounds {
 **TRAIT_TYPES**
 `;
 
-export const generateTypes = (
-  item: string,
-  layers: Layers,
-  outDir?: string
+export const readConfigAndGenerateTypes = async (
+  path: string = "bolt.toml"
 ) => {
+  if (!fs.existsSync(path)) {
+    throw new Error("Unable to read or find config file");
+  }
+
+  const config = fs.readFileSync(path, "utf-8");
+  let { items } = toml.parse(config) as unknown as BoltConfig;
+  if (items.length) {
+    items.forEach((item) => {
+      const layers = JSON.parse(fs.readFileSync(item.config_path, "utf-8"));
+      generateTypes(item.name, layers);
+    });
+  }
+
+  return;
+};
+
+const generateTypes = (item: string, layers: Layers, outDir?: string) => {
   if (!outDir) outDir = "./.bolt/";
   const { bgcolors, images } = layers;
   const layerKeys = ["background", ...Object.keys(images)];
@@ -110,17 +125,5 @@ export const generateTypes = (
     .replace("**TRAIT_TYPES**", traitTypes);
 
   const outFile = `./src/types/${item.toLowerCase().replace(/ /g, "-")}.ts`;
-
-  fs.writeFile(outFile, generated, (err) => {
-    if (err) throw err;
-  });
+  fs.writeFileSync(outFile, generated);
 };
-
-const config = fs.readFileSync("bolt.toml", "utf8");
-let { items } = toml.parse(config) as unknown as BoltConfig;
-if (items.length) {
-  items.forEach((item) => {
-    const layers = JSON.parse(fs.readFileSync(item.config_path, "utf-8"));
-    generateTypes(item.name, layers);
-  });
-}
