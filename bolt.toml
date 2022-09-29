@@ -1,5 +1,5 @@
 [[items]]
-item = 'Noun'
+name = 'Noun'
 config_path ='./nouns-image-data.json'
 
 [items.options]
@@ -7,7 +7,7 @@ outDir = './src/pkg'
 rpc = ''
 
 [[items]]
-item = 'Wizard'
+name = 'Wizard'
 config_path ='./wizards.json'
 
 [items.options]

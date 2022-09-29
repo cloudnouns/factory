@@ -1,61 +1,31 @@
+import type { Layers } from "./src/types";
 import fs from "fs";
-import Config from "./bolt.config.js";
+import toml from "@ltd/j-toml";
 
-const Item = Config.items[0];
-const { item, config } = Item;
+export type BoltConfig = {
+  items: BoltItem[];
+};
 
-const layers = config;
-
-const labels: string[] = [];
-const typeLabels: string[] = [];
-const typeOpts: string[] = [];
-
-const bgTypes = layers.bgcolors
-  .map((color: string) => `"#${color.toLowerCase().replace(/#/g, "")}"`)
-  .join("\n\t| ");
-typeOpts.push("export type BackgroundColor = \n\t| " + bgTypes + ";");
-
-Object.entries(layers.images).forEach(([label, items]) => {
-  const firstLetter = label.charAt(0).toUpperCase();
-  const typeLabel = firstLetter + label.slice(1).toLowerCase() + "Layer";
-  labels.push(label);
-  typeLabels.push(`${label}: ${typeLabel};`);
-
-  const typeString = `export type ${typeLabel} = \n\t| `;
-  const types = items
-    .map(({ filename }) => `'${filename.toLowerCase().replace(/ /g, "-")}'`)
-    .join("\n\t| ");
-  typeOpts.push(typeString + types + ";");
-});
-
-/**
- * **ITEM_LABEL** e.g. Noun, Lost Noun, Punk, Wizard, etc...
- * **DATA_LAYER_LABELS** e.g. "bodies" | "accessories" | "heads" | "glasses";
- * **LAYER_TYPE_LABELS** e.g. bodies?: BodyLayer; heads?: HeadLayer;
- * **ARRAY_SEED** DATA_LAYER_LABELS.length + 1 (for background)
- * **DATA_LAYER_TYPES**
- */
-const configTemplate = `export interface BoltConfig {
-  item: string;
-	options?: { [key: string]: any };
-  layers: Layers;
+export interface BoltItem {
+  name: string;
+  config_path: string;
+  options?: { [key: string]: any };
 }
 
-export interface **ITEM_LABEL** extends Traits {
+const typeTemplate = `export interface **ITEM_NAME** extends Traits {
   dataUrl: string;
   seed: Seed;
 }
 
 export type Traits = {
-	background: BackgroundColor;
-	**LAYER_TYPE_LABELS**
+	**TRAIT_DEFINITIONS**
  }
 
 export type Seed = { [key in Layer]: number };
 export type ArraySeed = [**ARRAY_SEED**];
 export type PartialTraits = { [T in keyof Traits]?: Traits[T] }
 
-export type DataLayer = **DATA_LAYER_LABELS**;
+export type DataLayer = **DATA_LAYER_NAMES**;
 export type Layer = "background" | DataLayer;
 export type Layers = {
   bgcolors: string[];
@@ -85,22 +55,72 @@ interface ImageBounds {
 
 // Types below are generated from config file
 
-**DATA_LAYER_TYPES**
+**TRAIT_TYPES**
 `;
 
-const template = configTemplate
-  .replace("**ITEM_LABEL**", item)
-  .replace(
-    "**DATA_LAYER_LABELS**",
-    labels.map((label) => `"${label}"`).join(" | ")
-  )
-  .replace(
-    "**ARRAY_SEED**",
-    new Array(labels.length + 1).fill("number").join(", ")
-  )
-  .replace("**LAYER_TYPE_LABELS**", typeLabels.join("\n\t"))
-  .replace("**DATA_LAYER_TYPES**", typeOpts.join("\n\n"));
+export const generateTypes = (
+  item: string,
+  layers: Layers,
+  outDir?: string
+) => {
+  if (!outDir) outDir = "./.bolt/";
+  const { bgcolors, images } = layers;
+  const layerKeys = ["background", ...Object.keys(images)];
 
-fs.writeFile("./src/types/index.ts", template, (err) => {
-  if (err) throw err;
-});
+  const entries = layerKeys.map((key) => {
+    const entry = {
+      trait: key,
+      label: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase() + "Layer",
+      types: "",
+    };
+
+    if (key === "background") {
+      entry.label = "BackgroundColor";
+      entry.types = bgcolors
+        .map((hex) => '"#' + hex.toLowerCase().replace(/#/g, "") + '"')
+        .join("\n\t| ");
+    } else {
+      entry.types = images[key as keyof Layers["images"]]
+        .map((data) => {
+          return '"' + data.filename.toLowerCase().replace(/ /g, "-") + '"';
+        })
+        .join("\n\t| ");
+    }
+
+    return entry;
+  });
+
+  const definitions = entries
+    .map((entry) => `${entry.trait}: ${entry.label};`)
+    .join("\n\t");
+  const layerCountString = layerKeys.map((k) => "number").join(", ");
+  const dataLayerNamees = layerKeys
+    .filter((k) => k !== "background")
+    .map((k) => `"${k}"`)
+    .join(` | `);
+  const traitTypes = entries
+    .map((entry) => `export type ${entry.label} =\n\t| ${entry.types};`)
+    .join("\n\n");
+
+  const generated = typeTemplate
+    .replace("**ITEM_NAME**", item)
+    .replace("**TRAIT_DEFINITIONS**", definitions)
+    .replace("**ARRAY_SEED**", layerCountString)
+    .replace("**DATA_LAYER_NAMES**", dataLayerNamees)
+    .replace("**TRAIT_TYPES**", traitTypes);
+
+  const outFile = `./src/types/${item.toLowerCase().replace(/ /g, "-")}.ts`;
+
+  fs.writeFile(outFile, generated, (err) => {
+    if (err) throw err;
+  });
+};
+
+const config = fs.readFileSync("bolt.toml", "utf8");
+let { items } = toml.parse(config) as unknown as BoltConfig;
+if (items.length) {
+  items.forEach((item) => {
+    const layers = JSON.parse(fs.readFileSync(item.config_path, "utf-8"));
+    generateTypes(item.name, layers);
+  });
+}
