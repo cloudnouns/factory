@@ -1,4 +1,3 @@
-import type { Layers, Seed } from "../types";
 import { BigNumber, type BigNumberish } from "@ethersproject/bignumber";
 
 interface DecodedImage {
@@ -13,20 +12,6 @@ interface ImageBounds {
   bottom: number;
   left: number;
 }
-
-export const getItemParts = (seed: Seed, layers: Layers) => {
-  const { bgcolors, images } = layers;
-  const dataLayers = Object.entries(seed).filter(([layer]) => {
-    return layer !== "background";
-  });
-
-  return {
-    parts: dataLayers.map(([layer, value]) => {
-      return images[layer as keyof Layers["images"]][value];
-    }),
-    background: bgcolors[seed.background],
-  };
-};
 
 const shiftRightAndCast = (
   value: BigNumberish,

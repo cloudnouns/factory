@@ -17,49 +17,18 @@ type ImageData = {
   images: { [key: string]: any[] };
 };
 
-const typeTemplate = `export interface **ITEM_NAME** extends Traits {
+const typeTemplate = `import type { Seed } from "../lib";
+
+export interface **ITEM_NAME** extends Traits {
   dataUrl: string;
   seed: Seed;
 }
 
-export type Traits = {
-	**TRAIT_DEFINITIONS**
+export interface Traits {
+	**OBJECT_DEFINITIONS**
  }
 
-export type Seed = { [key in Layer]: number };
-export type PartialTraits = { [T in keyof Traits]?: Traits[T] }
-
-export type DataLayer = **DATA_LAYER_NAMES**;
-export type Layer = "background" | DataLayer;
-export type Layers = {
-  bgcolors: string[];
-  palette: string[];
-  images: Images;
-}
-
-type Images = { [key in DataLayer]: EncodedImage[] };
-
-type EncodedImage = {
-  filename: string;
-  data: string;
-}
-
-export interface DecodedImage {
-  paletteIndex: number;
-  bounds: ImageBounds;
-  rects: [length: number, colorIndex: number][];
-}
-
-interface ImageBounds {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
-// Types below are generated from config file
-
-**TRAIT_TYPES**
+**INDIVIDUAL_DEFINITIONS**
 `;
 
 export const readConfigAndGenerateTypes = async (
@@ -109,24 +78,19 @@ const generateTypes = (item: string, imageData: ImageData, outDir?: string) => {
     return entry;
   });
 
-  const definitions = entries
-    .map((entry) => `${entry.trait}: ${entry.label};`)
-    .join("\n\t");
-  const dataLayerNamees = imageKeys
-    .filter((key) => key !== "background")
-    .map((key) => `"${key}"`)
-    .join(` | `);
-  const traitTypes = entries
-    .map((entry) => `export type ${entry.label} =\n\t| ${entry.types};`)
-    .join("\n\n");
-  const layerCountString = imageKeys.map(() => "number").join(", ");
+  const definitions = {
+    object: entries
+      .map((entry) => `${entry.trait}: ${entry.label};`)
+      .join("\n\t"),
+    individual: entries
+      .map((entry) => `export type ${entry.label} =\n\t| ${entry.types};`)
+      .join("\n\n"),
+  };
 
   const generated = typeTemplate
     .replace("**ITEM_NAME**", item)
-    .replace("**TRAIT_DEFINITIONS**", definitions)
-    .replace("**DATA_LAYER_NAMES**", dataLayerNamees)
-    .replace("**TRAIT_TYPES**", traitTypes)
-    .replace("**ARRAY_SEED**", layerCountString);
+    .replace("**OBJECT_DEFINITIONS**", definitions.object)
+    .replace("**INDIVIDUAL_DEFINITIONS**", definitions.individual);
 
   const outFile = `./src/types/${item.toLowerCase().replace(/ /g, "-")}.ts`;
   fs.writeFileSync(outFile, generated);

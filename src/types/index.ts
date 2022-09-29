@@ -1,8 +1,4 @@
-export interface BoltConfig {
-  item: string;
-  options?: { [key: string]: any };
-  layers: Layers;
-}
+import type { Seed } from "../lib";
 
 export interface Wizard extends Traits {
   dataUrl: string;
@@ -19,24 +15,6 @@ export type Traits = {
   item: ItemLayer;
   hat: HatLayer;
   one: OneLayer;
-};
-
-export type Layer = "background" | DataLayer;
-export type DataLayer = keyof Traits;
-export type Seed = { [T in keyof Traits]: number };
-export type PartialTraits = { [T in keyof Traits]?: Traits[T] };
-
-export type Layers = {
-  bgcolors: string[];
-  palette: string[];
-  images: Images;
-};
-
-type Images = { [key in DataLayer]: EncodedImage[] };
-
-type EncodedImage = {
-  filename: string;
-  data: string;
 };
 
 // Types below are generated from config file
