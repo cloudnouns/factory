@@ -1,9 +1,11 @@
 #! /usr/bin/env node
-import type { BoltConfig } from "./src/types";
-import fs from "fs";
-import Config from "./bolt.config.js";
 
-console.log(Config.items);
+import fs from "fs";
+import toml from "@ltd/j-toml";
+
+// const Config = require("./bolt.config.js");
+
+// console.log(Config.items);
 // import path from "path";
 // import { fileURLToPath } from "url";
 
@@ -15,12 +17,19 @@ const action = args[0];
 
 if (action === "init") {
   console.log("Looking for config file...");
-  const file = "./bolt.config.js";
+  const file = "./bolt.toml";
 
   if (fs.existsSync(file)) {
     console.log("found!");
     const config = fs.readFileSync(file, "utf8");
-    console.log(config);
+    const f = toml.parse(config);
+    // @ts-ignore
+    const { config_path } = f.items[0];
+    const layers = JSON.parse(fs.readFileSync(config_path, "utf8"));
+    console.log(f);
+    console.log(config_path);
+    console.log(layers);
+    // console.log(config);
     // const file2 = ((await import("./bolt.config.js")) as BoltConfig).default;
     // console.log(file2);
   } else {

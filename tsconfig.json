@@ -12,5 +12,6 @@
     "strict": true,
     "typeRoots": ["node_modules/@types", "src/types"]
   },
-  "include": ["./src/*.ts", "./src/**/*.ts", "./package.json", "./cli.ts"]
+  "include": ["./src/*.ts", "./src/**/*.ts", "./package.json", "./cli.ts"],
+  "exclude": ["./bolt.config.js"]
 }
