@@ -1,16 +1,21 @@
-import type { Layers } from "./src/types";
 import fs from "fs";
 import toml from "@ltd/j-toml";
 
-export type BoltConfig = {
-  items: BoltItem[];
+type ConfigFile = {
+  items: Item[];
 };
 
-export interface BoltItem {
+interface Item {
   name: string;
   config_path: string;
   options?: { [key: string]: any };
 }
+
+type ImageData = {
+  bgcolors: string[];
+  palette: string[];
+  images: { [key: string]: any[] };
+};
 
 const typeTemplate = `export interface **ITEM_NAME** extends Traits {
   dataUrl: string;
@@ -22,7 +27,6 @@ export type Traits = {
  }
 
 export type Seed = { [key in Layer]: number };
-export type ArraySeed = [**ARRAY_SEED**];
 export type PartialTraits = { [T in keyof Traits]?: Traits[T] }
 
 export type DataLayer = **DATA_LAYER_NAMES**;
@@ -66,23 +70,23 @@ export const readConfigAndGenerateTypes = async (
   }
 
   const config = fs.readFileSync(path, "utf-8");
-  let { items } = toml.parse(config) as unknown as BoltConfig;
+  let { items } = toml.parse(config) as unknown as ConfigFile;
   if (items.length) {
     items.forEach((item) => {
-      const layers = JSON.parse(fs.readFileSync(item.config_path, "utf-8"));
-      generateTypes(item.name, layers);
+      const imageData = JSON.parse(fs.readFileSync(item.config_path, "utf-8"));
+      generateTypes(item.name, imageData);
     });
   }
 
   return;
 };
 
-const generateTypes = (item: string, layers: Layers, outDir?: string) => {
+const generateTypes = (item: string, imageData: ImageData, outDir?: string) => {
   if (!outDir) outDir = "./.bolt/";
-  const { bgcolors, images } = layers;
-  const layerKeys = ["background", ...Object.keys(images)];
+  const { bgcolors, images } = imageData;
+  const imageKeys = ["background", ...Object.keys(images)];
 
-  const entries = layerKeys.map((key) => {
+  const entries = imageKeys.map((key) => {
     const entry = {
       trait: key,
       label: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase() + "Layer",
@@ -95,7 +99,7 @@ const generateTypes = (item: string, layers: Layers, outDir?: string) => {
         .map((hex) => '"#' + hex.toLowerCase().replace(/#/g, "") + '"')
         .join("\n\t| ");
     } else {
-      entry.types = images[key as keyof Layers["images"]]
+      entry.types = images[key]
         .map((data) => {
           return '"' + data.filename.toLowerCase().replace(/ /g, "-") + '"';
         })
@@ -108,21 +112,21 @@ const generateTypes = (item: string, layers: Layers, outDir?: string) => {
   const definitions = entries
     .map((entry) => `${entry.trait}: ${entry.label};`)
     .join("\n\t");
-  const layerCountString = layerKeys.map((k) => "number").join(", ");
-  const dataLayerNamees = layerKeys
-    .filter((k) => k !== "background")
-    .map((k) => `"${k}"`)
+  const dataLayerNamees = imageKeys
+    .filter((key) => key !== "background")
+    .map((key) => `"${key}"`)
     .join(` | `);
   const traitTypes = entries
     .map((entry) => `export type ${entry.label} =\n\t| ${entry.types};`)
     .join("\n\n");
+  const layerCountString = imageKeys.map(() => "number").join(", ");
 
   const generated = typeTemplate
     .replace("**ITEM_NAME**", item)
     .replace("**TRAIT_DEFINITIONS**", definitions)
-    .replace("**ARRAY_SEED**", layerCountString)
     .replace("**DATA_LAYER_NAMES**", dataLayerNamees)
-    .replace("**TRAIT_TYPES**", traitTypes);
+    .replace("**TRAIT_TYPES**", traitTypes)
+    .replace("**ARRAY_SEED**", layerCountString);
 
   const outFile = `./src/types/${item.toLowerCase().replace(/ /g, "-")}.ts`;
   fs.writeFileSync(outFile, generated);

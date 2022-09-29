@@ -1,4 +1,4 @@
-import type { Layers, Seed, Traits, PartialTraits, DataLayer } from "../types";
+import type { Layers, Seed, Traits, PartialTraits } from "../types";
 import type { BigNumberish } from "@ethersproject/bignumber";
 import { keccak256 as solidityKeccak256 } from "@ethersproject/solidity";
 import { buildSVG, getItemParts, getPseudorandomPart } from "./builder.js";
@@ -64,7 +64,7 @@ export class Factory {
         } else {
           seed[key] = getPseudorandomPart(
             pseudorandomness,
-            images[key as DataLayer].length,
+            images[key as keyof Layers["images"]].length,
             i * 48
           );
         }
@@ -118,7 +118,7 @@ export class Factory {
       const arr = [seed.background];
 
       keys.forEach((trait) => {
-        arr.push(seed[trait as DataLayer]);
+        arr.push(seed[trait as keyof Layers["images"]]);
       });
 
       return arr;
@@ -134,7 +134,7 @@ export class Factory {
           return [layer, "#" + this.layers.bgcolors[value]];
         }
         const { images } = this.layers;
-        const image = images[layer as DataLayer][value];
+        const image = images[layer as keyof Layers["images"]][value];
         return [layer, image.filename];
       });
 
@@ -165,10 +165,10 @@ export class Factory {
           seed.background = index;
         } else if (Object.keys(seed).includes(layer)) {
           const { images } = this.layers;
-          const index = images[layer as DataLayer].findIndex(
+          const index = images[layer as keyof Layers["images"]].findIndex(
             (image) => value === image.filename
           );
-          seed[layer as DataLayer] = index;
+          seed[layer as keyof Layers["images"]] = index;
         }
       });
 
@@ -199,7 +199,7 @@ export class Factory {
             const color = bgcolors[value];
             if (!color) throw new Error();
           } else {
-            const image = images[layer as DataLayer][value];
+            const image = images[layer as keyof Layers["images"]][value];
             if (!image) throw new Error();
           }
         } catch (err) {

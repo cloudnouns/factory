@@ -1,5 +1,18 @@
-import type { Layers, DataLayer, Seed, DecodedImage } from "../types";
+import type { Layers, Seed } from "../types";
 import { BigNumber, type BigNumberish } from "@ethersproject/bignumber";
+
+interface DecodedImage {
+  paletteIndex: number;
+  bounds: ImageBounds;
+  rects: [length: number, colorIndex: number][];
+}
+
+interface ImageBounds {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
 
 export const getItemParts = (seed: Seed, layers: Layers) => {
   const { bgcolors, images } = layers;
@@ -9,7 +22,7 @@ export const getItemParts = (seed: Seed, layers: Layers) => {
 
   return {
     parts: dataLayers.map(([layer, value]) => {
-      return images[layer as DataLayer][value];
+      return images[layer as keyof Layers["images"]][value];
     }),
     background: bgcolors[seed.background],
   };

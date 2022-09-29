@@ -21,30 +21,11 @@ export type Traits = {
   one: OneLayer;
 };
 
-export type Seed = { [key in Layer]: number };
-export type ArraySeed = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number
-];
+export type Layer = "background" | DataLayer;
+export type DataLayer = keyof Traits;
+export type Seed = { [T in keyof Traits]: number };
 export type PartialTraits = { [T in keyof Traits]?: Traits[T] };
 
-export type DataLayer =
-  | "skin"
-  | "cloth"
-  | "eye"
-  | "mouth"
-  | "acc"
-  | "item"
-  | "hat"
-  | "one";
-export type Layer = "background" | DataLayer;
 export type Layers = {
   bgcolors: string[];
   palette: string[];
@@ -57,19 +38,6 @@ type EncodedImage = {
   filename: string;
   data: string;
 };
-
-export interface DecodedImage {
-  paletteIndex: number;
-  bounds: ImageBounds;
-  rects: [length: number, colorIndex: number][];
-}
-
-interface ImageBounds {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
 
 // Types below are generated from config file
 
