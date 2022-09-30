@@ -1,68 +1,83 @@
-import type { Traits } from "../types";
 import type { BigNumberish } from "@ethersproject/bignumber";
-import { keccak256 as solidityKeccak256 } from "@ethersproject/solidity";
+import { keccak256 } from "@ethersproject/solidity";
 import { buildSVG, getPseudorandomPart } from "./builder.js";
 
-export type Seed = { [T in keyof Traits]: number };
-type PartialTraits = { [T in keyof Traits]?: Traits[T] };
+type EncodedImage = { filename: string; data: string };
 
-type ImageData = {
+type ImageData<Parts> = {
   bgcolors: string[];
   palette: string[];
   images: {
-    [T in keyof Traits]: {
-      filename: string;
-      data: string;
-    }[];
+    [T in keyof Parts]: EncodedImage[];
   };
 };
 
-export class Factory {
+type Image<Parts, BgColors> = Parts & {
+  background: BgColors;
+};
+
+type Seed<Image> = {
+  [T in keyof Image]: number;
+};
+
+type NamedSeed<Image> = {
+  [T in keyof Image]: Image[T];
+};
+
+export class Factory<Parts, BgColors> {
   readonly bgcolors;
   readonly palette;
   readonly images;
 
-  constructor(imageData: ImageData) {
+  constructor(imageData: ImageData<Parts>) {
     this.bgcolors = imageData.bgcolors;
     this.palette = imageData.palette;
     this.images = imageData.images;
   }
 
-  create(traits: PartialTraits = {}, options?: { size?: number }) {
+  create = (
+    traits: Partial<Image<Parts, BgColors>> = {},
+    options?: { size?: number }
+  ) => {
     const seed = this.utils.traitsToSeed(traits);
     return this.buildItem(seed, options?.size);
-  }
+  };
 
-  createFromSeed(seed: Seed, options?: { size?: number }) {
+  createFromSeed = (
+    seed: Seed<Image<Parts, BgColors>>,
+    options?: { size?: number }
+  ) => {
     return this.buildItem(seed, options?.size);
-  }
+  };
 
-  private buildItem(seed: Seed, size?: number) {
+  private buildItem = (seed: Seed<Image<Parts, BgColors>>, size?: number) => {
     this.utils.validateSeed(seed);
 
     const { parts, background } = this.utils.getItemParts(seed);
     const svg = buildSVG(parts, this.palette, background, size);
-    const traits = this.utils.seedToTraits(seed);
+    const namedSeed = this.utils.seedToTraits(seed);
 
     return {
-      ...traits,
+      ...namedSeed,
       seed,
       dataUrl: "data:image/svg+xml;base64," + btoa(svg),
     };
-  }
+  };
 
   utils = {
-    /** Given a seed, grabs the
+    /** Given a seed, returns RLE-encoded data or color string
      * @param {Seed} seed
      */
-    getItemParts: (seed: Seed) => {
+    getItemParts: (seed: Seed<Image<Parts, BgColors>>) => {
       const dataLayers = Object.entries(seed).filter(([layer]) => {
         return layer !== "background";
       });
 
       return {
         parts: dataLayers.map(([layer, value]) => {
-          return this.images[layer as keyof ImageData["images"]][value];
+          const part = layer as keyof Parts;
+          const index = value as number;
+          return this.images[part][index];
         }),
         background: this.bgcolors[seed.background],
       };
@@ -73,13 +88,16 @@ export class Factory {
      * @param {string} [blockHash]
      * @returns Seed
      */
-    getSeedFromBlockHash: (id: BigNumberish, blockHash?: string): Seed => {
+    getSeedFromBlockHash: (
+      id: BigNumberish,
+      blockHash?: string
+    ): Seed<Image<Parts, BgColors>> => {
       if (!blockHash) {
         blockHash =
           "0x305837d283efbc5a8ea53934fb122ac88473c68c1db0ebe2a2279f09f5772878";
       }
 
-      const pseudorandomness = solidityKeccak256(
+      const pseudorandomness = keccak256(
         ["bytes32", "uint256"],
         [blockHash, id]
       );
@@ -96,7 +114,7 @@ export class Factory {
         } else {
           seed[key] = getPseudorandomPart(
             pseudorandomness,
-            this.images[key as keyof ImageData["images"]].length,
+            this.images[key as keyof Parts].length,
             i * 48
           );
         }
@@ -108,16 +126,16 @@ export class Factory {
     /** Generates a random seed
      * @returns Seed
      */
-    getRandomSeed: (): Seed => {
-      const temporarySeed: any = {};
+    getRandomSeed: (): Seed<Image<Parts, BgColors>> => {
+      const _seed: any = {};
 
-      Object.entries(this.images).forEach(([trait, items]) => {
-        temporarySeed[trait] = Math.floor(Math.random() * items.length);
+      Object.entries(this.images).forEach(([trait, items]: any) => {
+        _seed[trait] = Math.floor(Math.random() * items.length);
       });
 
       return {
         background: Math.floor(Math.random() * this.bgcolors.length),
-        ...temporarySeed,
+        ..._seed,
       };
     },
 
@@ -125,7 +143,7 @@ export class Factory {
      * @param {number[]} arr
      * @returns Seed
      */
-    arrayToSeed: (arr: number[]): Seed => {
+    arrayToSeed: (arr: number[]): Seed<Image<Parts, BgColors>> => {
       const keys = ["background", ...Object.keys(this.images)];
       const entries = keys.map((layer, i) => [layer, arr[i]]);
       return Object.fromEntries(entries);
@@ -135,7 +153,7 @@ export class Factory {
      * @param {number[]} arr
      * @returns Traits
      */
-    arrayToTraits: (arr: number[]): Traits => {
+    arrayToTraits: (arr: number[]): NamedSeed<Image<Parts, BgColors>> => {
       const seed = this.utils.arrayToSeed(arr);
       return this.utils.seedToTraits(seed);
     },
@@ -144,12 +162,12 @@ export class Factory {
      * @param {Seed} seed
      * @returns number[]
      */
-    seedToArray: (seed: Seed): number[] => {
+    seedToArray: (seed: Seed<Image<Parts, BgColors>>): number[] => {
       const keys = Object.keys(this.images);
       const arr = [seed.background];
 
       keys.forEach((trait) => {
-        arr.push(seed[trait as keyof ImageData["images"]]);
+        arr.push(seed[trait as keyof Parts]);
       });
 
       return arr;
@@ -159,12 +177,15 @@ export class Factory {
      * @param {Seed} seed
      * @returns Traits
      */
-    seedToTraits: (seed: Seed): Traits => {
+    seedToTraits: (
+      seed: Seed<Image<Parts, BgColors>>
+    ): NamedSeed<Image<Parts, BgColors>> => {
       const traits = Object.entries(seed).map(([layer, value]) => {
         if (layer === "background") {
-          return [layer, "#" + this.bgcolors[value]];
+          return [layer, "#" + this.bgcolors[value as number]];
         }
-        const image = this.images[layer as keyof ImageData["images"]][value];
+        const image: EncodedImage =
+          this.images[layer as keyof Parts][value as number];
         return [layer, image.filename];
       });
 
@@ -172,32 +193,41 @@ export class Factory {
     },
 
     /** Transforms traits object into a seed array
-     * @param {Traits|PartialTraits} traits
+     * @param {Traits|Partial} traits
      * @returns number[]
      */
-    traitsToArray: (traits: Traits | PartialTraits): number[] => {
+    traitsToArray: (
+      traits:
+        | NamedSeed<Image<Parts, BgColors>>
+        | Partial<NamedSeed<Image<Parts, BgColors>>>
+    ): number[] => {
       const seed = this.utils.traitsToSeed(traits);
       return this.utils.seedToArray(seed);
     },
 
     /** Transforms traits object into a seed object
-     * @param {Traits|PartialTraits} traits
+     * @param {Traits|Partial} traits
      * @returns Seed
      */
-    traitsToSeed: (traits: Traits | PartialTraits): Seed => {
+    traitsToSeed: (
+      traits:
+        | NamedSeed<Image<Parts, BgColors>>
+        | Partial<NamedSeed<Image<Parts, BgColors>>>
+    ): Seed<Image<Parts, BgColors>> => {
       const seed = this.utils.getRandomSeed();
 
       Object.entries(traits).forEach(([layer, value]) => {
         if (layer === "background") {
-          const index = this.bgcolors.findIndex(
-            (color) => value.replace("#", "") === color
-          );
+          const index = this.bgcolors.findIndex((color) => {
+            const v = value as string;
+            return v.replace("#", "") === color;
+          });
           seed.background = index;
         } else if (Object.keys(seed).includes(layer)) {
-          const index = this.images[
-            layer as keyof ImageData["images"]
-          ].findIndex((image) => value === image.filename);
-          seed[layer as keyof ImageData["images"]] = index;
+          const index = this.images[layer as keyof Parts].findIndex(
+            (image) => value === image.filename
+          );
+          seed[layer as keyof Parts] = index;
         }
       });
 
@@ -208,7 +238,7 @@ export class Factory {
      * @param {Seed} seed
      * @throws if provided Seed has unknown or missing keys, or value can't be located
      */
-    validateSeed: (seed: Seed): void => {
+    validateSeed: (seed: Seed<Image<Parts, BgColors>>): void => {
       const seedKeys = Object.keys(seed);
       const layerKeys = ["background", ...Object.keys(this.images)];
 
@@ -224,11 +254,10 @@ export class Factory {
       Object.entries(seed).forEach(([layer, value]) => {
         try {
           if (layer === "background") {
-            const color = this.bgcolors[value];
+            const color = this.bgcolors[value as number];
             if (!color) throw new Error();
           } else {
-            const image =
-              this.images[layer as keyof ImageData["images"]][value];
+            const image = this.images[layer as keyof Parts][value as number];
             if (!image) throw new Error();
           }
         } catch (err) {
