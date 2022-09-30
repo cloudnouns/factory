@@ -44,26 +44,26 @@ export const readConfigAndGenerateTypes = async (
     writeFileSync(path, content);
   }
 
-  if (existsSync("tsconfig.json")) {
-    const config = JSON.parse(readFileSync("tsconfig.json", "utf-8"));
-    let { compilerOptions } = config;
+  // if (existsSync("tsconfig.json")) {
+  //   const config = JSON.parse(readFileSync("tsconfig.json", "utf-8"));
+  //   let { compilerOptions } = config;
 
-    if (compilerOptions.typeRoots) {
-      const { typeRoots } = compilerOptions;
-      if (typeRoots.includes("./.bolt")) return;
-      compilerOptions.typeRoots.push("./.bolt");
-    } else {
-      compilerOptions = {
-        typeRoots: ["node_modules/@types", "./.bolt"],
-        ...compilerOptions,
-      };
-    }
+  //   if (compilerOptions.typeRoots) {
+  //     const { typeRoots } = compilerOptions;
+  //     if (typeRoots.includes("./.bolt")) return;
+  //     compilerOptions.typeRoots.push("./.bolt");
+  //   } else {
+  //     compilerOptions = {
+  //       typeRoots: ["node_modules/@types", "./.bolt"],
+  //       ...compilerOptions,
+  //     };
+  //   }
 
-    config.compilerOptions = compilerOptions;
-    writeFileSync("tsconfig.json", JSON.stringify(config, null, 2));
-  } else {
-    console.log('TSConfig not found. Remember to add "./.bolt" to typeRoots');
-  }
+  //   config.compilerOptions = compilerOptions;
+  //   writeFileSync("tsconfig.json", JSON.stringify(config, null, 2));
+  // } else {
+  //   console.log('TSConfig not found. Remember to add "./.bolt" to typeRoots');
+  // }
 
   return;
 };
