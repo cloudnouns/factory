@@ -189,18 +189,18 @@ export class Factory<Parts, BgColors> {
     ): Seed<Image<Parts, BgColors>> => {
       const seed = this.utils.getRandomSeed();
 
-      Object.entries(namedSeed).forEach(([layer, value]) => {
-        if (layer === "background") {
+      Object.entries(namedSeed).forEach(([part, value]) => {
+        if (part === "background") {
           const index = this.bgcolors.findIndex((color) => {
             const v = value as string;
             return v.replace("#", "") === color;
           });
           seed.background = index;
-        } else if (Object.keys(seed).includes(layer)) {
-          const index = this.images[layer as keyof Parts].findIndex(
+        } else if (Object.keys(seed).includes(part)) {
+          const index = this.images[part as keyof Parts].findIndex(
             (image) => value === image.filename
           );
-          seed[layer as keyof Parts] = index;
+          seed[part as keyof Parts] = index;
         }
       });
 
