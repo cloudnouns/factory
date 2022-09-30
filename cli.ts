@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-import fs from "fs";
+import { existsSync } from "fs";
 import { readConfigAndGenerateTypes } from "./script.js";
 
 const args = process.argv.slice(2, process.argv.length);
@@ -9,7 +9,7 @@ const action = args[0];
 if (["init", "i"].includes(action)) {
   console.log("Looking for config file...");
 
-  if (fs.existsSync("bolt.toml")) {
+  if (existsSync("bolt.toml")) {
     console.log("Found! Generating types...");
     await readConfigAndGenerateTypes();
   } else {
@@ -19,7 +19,7 @@ if (["init", "i"].includes(action)) {
   console.log("generating types...");
   const pathToConfig = args[1] || "bolt.toml";
 
-  if (!fs.existsSync(pathToConfig)) {
+  if (!existsSync(pathToConfig)) {
     console.error("config file not found:", pathToConfig);
     process.exit(1);
   }
