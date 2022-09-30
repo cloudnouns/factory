@@ -73,7 +73,7 @@ export const buildSVG = (
   background: string,
   size = 320
 ): string => {
-  let openingTag = `<svg width="${size}" height="${size}" viewBox="0 0 190 190" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">`;
+  let openingTag = `<svg width="${size}" height="${size}" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">`;
   if (background !== "transparent") {
     openingTag += `<rect width="100%" height="100%" fill="#${background}" />`;
   }
