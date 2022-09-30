@@ -1,10 +1,4 @@
-export interface Wizard extends Traits {
-  dataUrl: string;
-  seed: { [T in keyof Traits]: number };
-}
-
-export type Traits = {
-  background: BackgroundColor;
+export type WizardParts = {
   skin: SkinLayer;
   cloth: ClothLayer;
   eye: EyeLayer;
@@ -15,9 +9,7 @@ export type Traits = {
   one: OneLayer;
 };
 
-// Types below are generated from config file
-
-export type BackgroundColor = "#c5a3e2" | "#a4addd" | "#e0a4ad";
+export type WizardBgColors = "#c5a3e2" | "#a4addd" | "#e0a4ad";
 
 export type SkinLayer =
   | "skin_1"

@@ -6,21 +6,26 @@
 //   },
 // };
 
-import { Factory } from "../../dist/index.js";
-import WizardConfig from "../../wizards.json" assert { type: "json" };
+import type { NounParts, NounBgColors } from "../../src/types/noun.js";
+import type { WizardParts, WizardBgColors } from "../../src/types/wizard.js";
+import { Factory } from "../../src/index.js";
+import nConfig from "../../nouns-image-data.json" assert { type: "json" };
+import wConfig from "../../wizards.json" assert { type: "json" };
 
-const hogwarts = new Factory(WizardConfig);
-const harry = hogwarts.create({ acc: "acc_4" });
-const dumbledore = hogwarts.createFromSeed({
-  background: 0,
-  skin: 4,
-  cloth: 9,
-  eye: 5,
-  mouth: 1,
-  acc: 2,
-  item: 8,
-  hat: 0,
-  one: 0,
+const bot = new Factory<NounParts, NounBgColors>(nConfig);
+const ted = bot.create({
+  background: "#e1d7d5",
+  bodies: "body-foggrey",
+  heads: "head-bagpipe",
+  glasses: "glasses-square-black",
+});
+const bed = bot.utils.arrayToNamedSeed([1, 3, 4, 3, 1]);
+
+console.log(ted);
+
+const hogwarts = new Factory<WizardParts, WizardBgColors>(wConfig);
+const harry = hogwarts.create({
+  mouth: "mouth_2",
 });
 
-console.log(dumbledore.dataUrl);
+console.log(harry.hat);
