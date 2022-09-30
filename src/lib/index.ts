@@ -56,7 +56,7 @@ export class Factory<Parts, BgColors> {
   };
 
   private buildItem = (seed: Seed<Image<Parts, BgColors>>, size?: number) => {
-    this.utils.validateSeed(seed);
+    seed = this.utils.validateSeed(seed);
 
     const { parts, background } = this.utils.getParts(seed);
     const svg = buildSVG(parts, this.palette, background, size);
@@ -245,12 +245,14 @@ export class Factory<Parts, BgColors> {
      * @param {Seed} seed
      * @throws if Seed has unknown or missing keys, or item can't be found
      */
-    validateSeed: (seed: Seed<Image<Parts, BgColors>>): void => {
-      const seedKeys = Object.keys(seed);
-      const layerKeys = ["background", ...Object.keys(this.images)];
+    validateSeed: (seed: Seed<Image<Parts, BgColors>>) => {
+      const seedParts = Object.keys(seed);
+      const imageParts = ["background", ...Object.keys(this.images)];
 
-      if (seedKeys.length < layerKeys.length) {
-        const missingKeys = layerKeys.filter((key) => !seedKeys.includes(key));
+      if (seedParts.length < imageParts.length) {
+        const missingKeys = imageParts.filter(
+          (key) => !seedParts.includes(key)
+        );
         throw new Error(
           `invalid_seed. seed is missing following properties: ${missingKeys.join(
             ", "
@@ -273,6 +275,14 @@ export class Factory<Parts, BgColors> {
           );
         }
       });
+
+      let sortedSeedEntries: any[] = [];
+      for (const part of imageParts) {
+        sortedSeedEntries.push([part, seed[part as keyof Parts]]);
+      }
+
+      const sortedSeed = Object.fromEntries(sortedSeedEntries);
+      return sortedSeed as Seed<Image<Parts, BgColors>>;
     },
   };
 }
