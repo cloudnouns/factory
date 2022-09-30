@@ -1,1 +1,1 @@
-export { Factory } from "./lib/index.js";
+export { Factory } from "./lib/factory.js";
