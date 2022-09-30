@@ -19,7 +19,7 @@ const ted = bot.create({
   heads: "head-bagpipe",
   glasses: "glasses-square-black",
 });
-const bed = bot.utils.arrayToNamedSeed([1, 3, 4, 3, 1]);
+const bed = bot.utils.arraySeedToNamedSeed([1, 3, 4, 3, 1]);
 
 console.log(ted);
 

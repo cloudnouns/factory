@@ -148,8 +148,10 @@ export class Factory<Parts, BgColors> {
      * @param {number[]} arr
      * @returns NamedSeed
      */
-    arrayToNamedSeed: (arr: number[]): NamedSeed<Image<Parts, BgColors>> => {
-      const seed = this.utils.arrayToSeed(arr);
+    arraySeedToNamedSeed: (
+      arr: number[]
+    ): NamedSeed<Image<Parts, BgColors>> => {
+      const seed = this.utils.arraySeedToSeed(arr);
       return this.utils.seedToNamedSeed(seed);
     },
 
@@ -157,7 +159,7 @@ export class Factory<Parts, BgColors> {
      * @param {number[]} arr
      * @returns Seed
      */
-    arrayToSeed: (arr: number[]): Seed<Image<Parts, BgColors>> => {
+    arraySeedToSeed: (arr: number[]): Seed<Image<Parts, BgColors>> => {
       const parts = ["background", ...Object.keys(this.images)];
       const entries = parts.map((part, i) => [part, arr[i]]);
       return Object.fromEntries(entries);
@@ -167,13 +169,13 @@ export class Factory<Parts, BgColors> {
      * @param {NamedSeed} namedSeed
      * @returns number[]
      */
-    namedSeedToArray: (
+    namedseedToArraySeedSeed: (
       namedSeed:
         | NamedSeed<Image<Parts, BgColors>>
         | Partial<NamedSeed<Image<Parts, BgColors>>>
     ): number[] => {
       const seed = this.utils.namedSeedToSeed(namedSeed);
-      return this.utils.seedToArray(seed);
+      return this.utils.seedToArraySeed(seed);
     },
 
     /** Transform NamedSeed into Seed
@@ -209,7 +211,7 @@ export class Factory<Parts, BgColors> {
      * @param {Seed} seed
      * @returns number[]
      */
-    seedToArray: (seed: Seed<Image<Parts, BgColors>>): number[] => {
+    seedToArraySeed: (seed: Seed<Image<Parts, BgColors>>): number[] => {
       const parts = Object.keys(this.images);
       const arr = [seed.background];
 
