@@ -35,11 +35,16 @@ export class Factory<Parts, BgColors> {
     this.images = imageData.images;
   }
 
+  /** Create new item.
+   * @param {Partial<NamedSeed>} [namedSeed]
+   * @param {object} [options]
+   * @param {number} [options.size]
+   */
   create = (
-    traits: Partial<Image<Parts, BgColors>> = {},
+    namedSeed: Partial<Image<Parts, BgColors>> = {},
     options?: { size?: number }
   ) => {
-    const seed = this.utils.traitsToSeed(traits);
+    const seed = this.utils.namedSeedToSeed(namedSeed);
     return this.buildItem(seed, options?.size);
   };
 
@@ -53,9 +58,9 @@ export class Factory<Parts, BgColors> {
   private buildItem = (seed: Seed<Image<Parts, BgColors>>, size?: number) => {
     this.utils.validateSeed(seed);
 
-    const { parts, background } = this.utils.getItemParts(seed);
+    const { parts, background } = this.utils.getParts(seed);
     const svg = buildSVG(parts, this.palette, background, size);
-    const namedSeed = this.utils.seedToTraits(seed);
+    const namedSeed = this.utils.seedToNamedSeed(seed);
 
     return {
       ...namedSeed,
@@ -65,25 +70,25 @@ export class Factory<Parts, BgColors> {
   };
 
   utils = {
-    /** Given a seed, returns RLE-encoded data or color string
+    /** Collects encoded data or color string for Seed
      * @param {Seed} seed
      */
-    getItemParts: (seed: Seed<Image<Parts, BgColors>>) => {
-      const dataLayers = Object.entries(seed).filter(([layer]) => {
-        return layer !== "background";
+    getParts: (seed: Seed<Image<Parts, BgColors>>) => {
+      const parts = Object.entries(seed).filter(([part]) => {
+        return part !== "background";
       });
 
       return {
-        parts: dataLayers.map(([layer, value]) => {
-          const part = layer as keyof Parts;
+        parts: parts.map(([part, value]) => {
+          const currentPart = part as keyof Parts;
           const index = value as number;
-          return this.images[part][index];
+          return this.images[currentPart][index];
         }),
         background: this.bgcolors[seed.background],
       };
     },
 
-    /** Emulates Noun.sol to generate a pseudorandom seed
+    /** Emulates NounsSeeder.sol methodology for pseudorandomly selecting a part
      * @param {BigNumberish} id
      * @param {string} [blockHash]
      * @returns Seed
@@ -101,20 +106,20 @@ export class Factory<Parts, BgColors> {
         ["bytes32", "uint256"],
         [blockHash, id]
       );
-      const keys = ["background", ...Object.keys(this.images)];
+      const parts = ["background", ...Object.keys(this.images)];
       const seed: any = {};
 
-      keys.forEach((key, i) => {
-        if (key === "background") {
+      parts.forEach((part, i) => {
+        if (part === "background") {
           seed.background = getPseudorandomPart(
             pseudorandomness,
             this.bgcolors.length,
             0
           );
         } else {
-          seed[key] = getPseudorandomPart(
+          seed[part] = getPseudorandomPart(
             pseudorandomness,
-            this.images[key as keyof Parts].length,
+            this.images[part as keyof Parts].length,
             i * 48
           );
         }
@@ -123,7 +128,7 @@ export class Factory<Parts, BgColors> {
       return seed;
     },
 
-    /** Generates a random seed
+    /** Generate a random Seed
      * @returns Seed
      */
     getRandomSeed: (): Seed<Image<Parts, BgColors>> => {
@@ -139,84 +144,50 @@ export class Factory<Parts, BgColors> {
       };
     },
 
-    /** Transforms seed array into a seed object
+    /** Transform number[] into NamedSeed
+     * @param {number[]} arr
+     * @returns NamedSeed
+     */
+    arrayToNamedSeed: (arr: number[]): NamedSeed<Image<Parts, BgColors>> => {
+      const seed = this.utils.arrayToSeed(arr);
+      return this.utils.seedToNamedSeed(seed);
+    },
+
+    /** Transform number[] into Seed
      * @param {number[]} arr
      * @returns Seed
      */
     arrayToSeed: (arr: number[]): Seed<Image<Parts, BgColors>> => {
-      const keys = ["background", ...Object.keys(this.images)];
-      const entries = keys.map((layer, i) => [layer, arr[i]]);
+      const parts = ["background", ...Object.keys(this.images)];
+      const entries = parts.map((part, i) => [part, arr[i]]);
       return Object.fromEntries(entries);
     },
 
-    /** Transforms seed array into a traits object
-     * @param {number[]} arr
-     * @returns Traits
-     */
-    arrayToTraits: (arr: number[]): NamedSeed<Image<Parts, BgColors>> => {
-      const seed = this.utils.arrayToSeed(arr);
-      return this.utils.seedToTraits(seed);
-    },
-
-    /** Transforms seed object into a seed array
-     * @param {Seed} seed
+    /** Transform NamedSeed into number[]
+     * @param {NamedSeed} namedSeed
      * @returns number[]
      */
-    seedToArray: (seed: Seed<Image<Parts, BgColors>>): number[] => {
-      const keys = Object.keys(this.images);
-      const arr = [seed.background];
-
-      keys.forEach((trait) => {
-        arr.push(seed[trait as keyof Parts]);
-      });
-
-      return arr;
-    },
-
-    /** Transforms seed object into a traits object
-     * @param {Seed} seed
-     * @returns Traits
-     */
-    seedToTraits: (
-      seed: Seed<Image<Parts, BgColors>>
-    ): NamedSeed<Image<Parts, BgColors>> => {
-      const traits = Object.entries(seed).map(([layer, value]) => {
-        if (layer === "background") {
-          return [layer, "#" + this.bgcolors[value as number]];
-        }
-        const image: EncodedImage =
-          this.images[layer as keyof Parts][value as number];
-        return [layer, image.filename];
-      });
-
-      return Object.fromEntries(traits);
-    },
-
-    /** Transforms traits object into a seed array
-     * @param {Traits|Partial} traits
-     * @returns number[]
-     */
-    traitsToArray: (
-      traits:
+    namedSeedToArray: (
+      namedSeed:
         | NamedSeed<Image<Parts, BgColors>>
         | Partial<NamedSeed<Image<Parts, BgColors>>>
     ): number[] => {
-      const seed = this.utils.traitsToSeed(traits);
+      const seed = this.utils.namedSeedToSeed(namedSeed);
       return this.utils.seedToArray(seed);
     },
 
-    /** Transforms traits object into a seed object
-     * @param {Traits|Partial} traits
+    /** Transform NamedSeed into Seed
+     * @param {NamedSeed} namedSeed
      * @returns Seed
      */
-    traitsToSeed: (
-      traits:
+    namedSeedToSeed: (
+      namedSeed:
         | NamedSeed<Image<Parts, BgColors>>
         | Partial<NamedSeed<Image<Parts, BgColors>>>
     ): Seed<Image<Parts, BgColors>> => {
       const seed = this.utils.getRandomSeed();
 
-      Object.entries(traits).forEach(([layer, value]) => {
+      Object.entries(namedSeed).forEach(([layer, value]) => {
         if (layer === "background") {
           const index = this.bgcolors.findIndex((color) => {
             const v = value as string;
@@ -234,9 +205,43 @@ export class Factory<Parts, BgColors> {
       return seed;
     },
 
-    /** Confirms validity of given seed
+    /** Transform Seed into number[]
      * @param {Seed} seed
-     * @throws if provided Seed has unknown or missing keys, or value can't be located
+     * @returns number[]
+     */
+    seedToArray: (seed: Seed<Image<Parts, BgColors>>): number[] => {
+      const parts = Object.keys(this.images);
+      const arr = [seed.background];
+
+      parts.forEach((part) => {
+        arr.push(seed[part as keyof Parts]);
+      });
+
+      return arr;
+    },
+
+    /** Transform Seed into NamedSeed
+     * @param {Seed} seed
+     * @returns NamedSeed
+     */
+    seedToNamedSeed: (
+      seed: Seed<Image<Parts, BgColors>>
+    ): NamedSeed<Image<Parts, BgColors>> => {
+      const parts = Object.entries(seed).map(([part, value]) => {
+        if (part === "background") {
+          return [part, "#" + this.bgcolors[value as number]];
+        }
+        const image: EncodedImage =
+          this.images[part as keyof Parts][value as number];
+        return [part, image.filename];
+      });
+
+      return Object.fromEntries(parts);
+    },
+
+    /** Validates Seed against factory data
+     * @param {Seed} seed
+     * @throws if Seed has unknown or missing keys, or item can't be found
      */
     validateSeed: (seed: Seed<Image<Parts, BgColors>>): void => {
       const seedKeys = Object.keys(seed);
@@ -251,18 +256,18 @@ export class Factory<Parts, BgColors> {
         );
       }
 
-      Object.entries(seed).forEach(([layer, value]) => {
+      Object.entries(seed).forEach(([part, value]) => {
         try {
-          if (layer === "background") {
+          if (part === "background") {
             const color = this.bgcolors[value as number];
             if (!color) throw new Error();
           } else {
-            const image = this.images[layer as keyof Parts][value as number];
+            const image = this.images[part as keyof Parts][value as number];
             if (!image) throw new Error();
           }
         } catch (err) {
           throw new Error(
-            `invalid_seed. bad property or value: { ..., ${layer}: ${value} }`
+            `invalid_seed. bad property or value: { ..., ${part}: ${value} }`
           );
         }
       });
