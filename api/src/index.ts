@@ -14,18 +14,27 @@ import wConfig from "../../wizards.json" assert { type: "json" };
 
 const bot = new Factory<NounParts, NounBgColors>(nConfig);
 const ted = bot.create({
+  glasses: "glasses-square-black",
+  heads: "head-bagpipe",
   background: "#e1d7d5",
   bodies: "body-foggrey",
-  heads: "head-bagpipe",
-  glasses: "glasses-square-black",
 });
 const bed = bot.utils.arraySeedToNamedSeed([1, 3, 4, 3, 1]);
 
 console.log(ted);
+console.log(bed);
 
 const hogwarts = new Factory<WizardParts, WizardBgColors>(wConfig);
-const harry = hogwarts.create({
-  mouth: "mouth_2",
+const harry = hogwarts.createFromSeed({
+  cloth: 5,
+  hat: 0,
+  one: 13,
+  skin: 6,
+  background: 1,
+  mouth: 1,
+  acc: 2,
+  eye: 1,
+  item: 1,
 });
 
-console.log(harry.hat);
+// console.log(harry.hat);
