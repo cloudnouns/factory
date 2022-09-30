@@ -1,15 +1,20 @@
 [[items]]
 name = 'Noun'
-config_path ='./nouns-image-data.json'
+config_path ='./data/nouns.json'
 
 [items.options]
-outDir = './src/pkg'
-rpc = ''
+viewbox = []
+
+[[items]]
+name = 'Lil Noun'
+config_path ='./data/lilnouns.json'
+
+[items.options]
+viewbox = []
 
 [[items]]
 name = 'Wizard'
-config_path ='./wizards.json'
+config_path ='./data/wizards.json'
 
 [items.options]
-outDir = './src/pkg'
-rpc = ''
+viewbox = []
