@@ -169,7 +169,7 @@ export class Factory<Parts, BgColors> {
      * @param {NamedSeed} namedSeed
      * @returns number[]
      */
-    namedseedToArraySeedSeed: (
+    namedSeedToArraySeed: (
       namedSeed:
         | NamedSeed<Image<Parts, BgColors>>
         | Partial<NamedSeed<Image<Parts, BgColors>>>
@@ -212,6 +212,8 @@ export class Factory<Parts, BgColors> {
      * @returns number[]
      */
     seedToArraySeed: (seed: Seed<Image<Parts, BgColors>>): number[] => {
+      seed = this.utils.validateSeed(seed);
+
       const parts = Object.keys(this.images);
       const arr = [seed.background];
 
@@ -229,6 +231,8 @@ export class Factory<Parts, BgColors> {
     seedToNamedSeed: (
       seed: Seed<Image<Parts, BgColors>>
     ): NamedSeed<Image<Parts, BgColors>> => {
+      seed = this.utils.validateSeed(seed);
+
       const parts = Object.entries(seed).map(([part, value]) => {
         if (part === "background") {
           return [part, "#" + this.bgcolors[value as number]];
