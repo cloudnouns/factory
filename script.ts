@@ -5,11 +5,11 @@ type ConfigFile = {
   items: Item[];
 };
 
-interface Item {
+type Item = {
   name: string;
   config_path: string;
   options?: { [key: string]: any };
-}
+};
 
 type ImageData = {
   bgcolors: string[];
@@ -17,16 +17,11 @@ type ImageData = {
   images: { [key: string]: any[] };
 };
 
-const typeTemplate = `import type { Seed } from "../lib";
-
-export interface **ITEM_NAME** extends Traits {
-  dataUrl: string;
-  seed: Seed;
-}
-
-export interface Traits {
+const typeTemplate = `export type {ITEM_NAME}Parts = {
 	**OBJECT_DEFINITIONS**
- }
+};
+
+export type {ITEM_NAME}BgColors = **BG_COLORS**;
 
 **INDIVIDUAL_DEFINITIONS**
 `;
@@ -53,7 +48,7 @@ export const readConfigAndGenerateTypes = async (
 const generateTypes = (item: string, imageData: ImageData, outDir?: string) => {
   if (!outDir) outDir = "./.bolt/";
   const { bgcolors, images } = imageData;
-  const imageKeys = ["background", ...Object.keys(images)];
+  const imageKeys = Object.keys(images);
 
   const entries = imageKeys.map((key) => {
     const entry = {
@@ -62,21 +57,18 @@ const generateTypes = (item: string, imageData: ImageData, outDir?: string) => {
       types: "",
     };
 
-    if (key === "background") {
-      entry.label = "BackgroundColor";
-      entry.types = bgcolors
-        .map((hex) => '"#' + hex.toLowerCase().replace(/#/g, "") + '"')
-        .join("\n\t| ");
-    } else {
-      entry.types = images[key]
-        .map((data) => {
-          return '"' + data.filename.toLowerCase().replace(/ /g, "-") + '"';
-        })
-        .join("\n\t| ");
-    }
+    entry.types = images[key]
+      .map((data) => {
+        return '"' + data.filename.toLowerCase().replace(/ /g, "-") + '"';
+      })
+      .join("\n\t| ");
 
     return entry;
   });
+
+  const bgColors = bgcolors
+    .map((hex) => '"#' + hex.toLowerCase().replace(/#/g, "") + '"')
+    .join(" | ");
 
   const definitions = {
     object: entries
@@ -88,7 +80,8 @@ const generateTypes = (item: string, imageData: ImageData, outDir?: string) => {
   };
 
   const generated = typeTemplate
-    .replace("**ITEM_NAME**", item)
+    .replace(/{ITEM_NAME}/g, item)
+    .replace("**BG_COLORS**", bgColors)
     .replace("**OBJECT_DEFINITIONS**", definitions.object)
     .replace("**INDIVIDUAL_DEFINITIONS**", definitions.individual);
 
