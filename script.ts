@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import rimraf from "rimraf";
 import toml from "@ltd/j-toml";
 
 type ConfigFile = {
@@ -36,7 +37,8 @@ export const readConfigAndGenerateTypes = async (
   const config = readFileSync(path, "utf-8");
   let { items } = toml.parse(config) as unknown as ConfigFile;
 
-  if (!existsSync("./.bolt")) mkdirSync("./.bolt");
+  if (existsSync("./.bolt")) rimraf("./.bolt", () => {});
+  else mkdirSync("./.bolt");
 
   for (const item of items) {
     const imageData = JSON.parse(readFileSync(item.config_path, "utf-8"));
