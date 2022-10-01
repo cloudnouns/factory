@@ -1,9 +1,12 @@
 {
-  "name": "@cloudnouns/factory",
-  "version": "0.0.1",
-  "main": "index.js",
-  "type": "module",
   "license": "MIT",
+  "version": "0.0.1",
+  "name": "@cloudnouns/factory",
+  "author": "Badu Blanc <badu@hey.com>",
+  "repository": "git://github.com/cloudnouns/factory.git",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "bin": {
     "bolt": "cli.js"
   },
