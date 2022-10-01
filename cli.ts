@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import { existsSync } from "fs";
-import { readConfigAndGenerateTypes } from "./script.js";
+import { readConfigAndGenerateTypes, createConfigFile } from "./script.js";
 
 const args = process.argv.slice(2, process.argv.length);
 const action = args[0];
@@ -13,7 +13,9 @@ if (["init", "i"].includes(action)) {
     console.log("Found! Generating types...");
     await readConfigAndGenerateTypes();
   } else {
-    console.log("not found. create?");
+    console.log("not found. creating bolt.toml");
+    createConfigFile();
+    console.log("update bolt.toml and run `npx bolt g` to generate types");
   }
 } else if (["generate", "g"].includes(action)) {
   console.log("generating types...");
