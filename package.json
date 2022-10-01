@@ -15,7 +15,6 @@
     "now": "yarn build && npx . init"
   },
   "devDependencies": {
-    "@ltd/j-toml": "^1.35.2",
     "@types/node": "^18.7.18",
     "@types/rimraf": "^3.0.2",
     "rimraf": "^3.0.2",
@@ -24,6 +23,7 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
-    "@ethersproject/solidity": "^5.7.0"
+    "@ethersproject/solidity": "^5.7.0",
+    "@ltd/j-toml": "^1.35.2"
   }
 }
