@@ -1,36 +1,13 @@
-import { BigNumber, type BigNumberish } from "@ethersproject/bignumber";
-
 interface DecodedImage {
   paletteIndex: number;
-  bounds: ImageBounds;
+  bounds: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
   rects: [length: number, colorIndex: number][];
 }
-
-interface ImageBounds {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
-const shiftRightAndCast = (
-  value: BigNumberish,
-  shiftAmount: number,
-  uintSize: number
-): string => {
-  const shifted = BigNumber.from(value).shr(shiftAmount).toHexString();
-  return `0x${shifted.substring(shifted.length - uintSize / 4)}`;
-};
-
-export const getPseudorandomPart = (
-  pseudorandomness: string,
-  partCount: number,
-  shiftAmount: number,
-  uintSize: number = 48
-): number => {
-  const hex = shiftRightAndCast(pseudorandomness, shiftAmount, uintSize);
-  return BigNumber.from(hex).mod(partCount).toNumber();
-};
 
 export const decodeImage = (image: string): DecodedImage => {
   const data = image.replace(/^0x/, "");

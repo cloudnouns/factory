@@ -1,6 +1,6 @@
-import type { BigNumberish } from "@ethersproject/bignumber";
+import { BigNumber, type BigNumberish } from "@ethersproject/bignumber";
 import { keccak256 } from "@ethersproject/solidity";
-import { buildSVG, getPseudorandomPart } from "./builder.js";
+import { buildSVG } from "./builder.js";
 
 type EncodedImage = { filename: string; data: string };
 
@@ -290,3 +290,22 @@ export class Factory<Parts, BgColors> {
     },
   };
 }
+
+const getPseudorandomPart = (
+  pseudorandomness: string,
+  partCount: number,
+  shiftAmount: number,
+  uintSize: number = 48
+): number => {
+  const hex = shiftRightAndCast(pseudorandomness, shiftAmount, uintSize);
+  return BigNumber.from(hex).mod(partCount).toNumber();
+};
+
+const shiftRightAndCast = (
+  value: BigNumberish,
+  shiftAmount: number,
+  uintSize: number
+): string => {
+  const shifted = BigNumber.from(value).shr(shiftAmount).toHexString();
+  return `0x${shifted.substring(shifted.length - uintSize / 4)}`;
+};
