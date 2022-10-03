@@ -41,19 +41,19 @@ export const readConfigAndGenerateTypes = async (
   else mkdirSync("./.bolt");
 
   for (const item of items) {
-    const imageData = JSON.parse(readFileSync(item.config_path, "utf-8"));
+    const { name, config_path } = item;
+    const imageData = JSON.parse(readFileSync(config_path, "utf-8"));
     const { path, content } = generateTypes(item.name, imageData);
     writeFileSync(path, content);
+
+    console.log();
   }
 
   return;
 };
 
 export const createConfigFile = () => {
-  const template = `[[items]]
-	name = 'Item Name'
-	config_path ='/path/to/config/file'`;
-
+  const template = `[[items]]\nname = 'Item Name'\nconfig_path ='/path_to_config_file'`;
   writeFileSync("bolt.toml", template);
 };
 
