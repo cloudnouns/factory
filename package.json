@@ -4,15 +4,18 @@
   "name": "@cloudnouns/factory",
   "author": "Badu Blanc <badu@hey.com>",
   "repository": "git://github.com/cloudnouns/factory.git",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "bin": {
     "bolt": "cli.js"
   },
   "scripts": {
     "watch": "tsc --watch",
-    "build": "rimraf ./dist && tsc && rm dist/cli.d.ts && chmod +x dist/cli.js",
+    "build": "rimraf ./dist && tsc && rm dist/cli.d.ts && chmod +x dist/cli.js && cp ./.npmrc dist/.npmrc",
     "go": "ts-node-esm ./script.ts",
     "try": "ts-node-esm ./api/src/index.ts",
     "now": "yarn build && npx . init"
