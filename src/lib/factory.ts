@@ -25,9 +25,9 @@ type NamedSeed<Image> = {
 };
 
 export class Factory<Parts, BgColors> {
-  readonly bgcolors;
-  readonly palette;
-  readonly images;
+  private bgcolors;
+  private palette;
+  private images;
 
   constructor(imageData: ImageData<Parts>) {
     this.bgcolors = imageData.bgcolors;
