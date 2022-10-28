@@ -24,6 +24,12 @@ type NamedSeed<Image> = {
   [T in keyof Image]: Image[T];
 };
 
+type RLESeed<Image> = {
+  [T in keyof Image]: number | string;
+};
+
+type ItemOptions = { size?: number };
+
 export class Factory<Parts, BgColors> {
   private bgcolors;
   private palette;
@@ -40,25 +46,35 @@ export class Factory<Parts, BgColors> {
    * @param {object} [options]
    * @param {number} [options.size]
    */
-  create = (
+  createItem = (
     namedSeed: Partial<Image<Parts, BgColors>> = {},
-    options?: { size?: number }
+    options?: ItemOptions
   ) => {
     const seed = this.utils.namedSeedToSeed(namedSeed);
     return this.buildItem(seed, options?.size);
   };
 
-  createFromSeed = (
+  createItemFromSeed = (
     seed: Seed<Image<Parts, BgColors>>,
-    options?: { size?: number }
+    options?: ItemOptions
   ) => {
     return this.buildItem(seed, options?.size);
   };
 
-  private buildItem = (seed: Seed<Image<Parts, BgColors>>, size?: number) => {
-    seed = this.utils.validateSeed(seed);
+  createItemFromRLESeed = (
+    rleSeed: RLESeed<Image<Parts, BgColors>>,
+    options?: ItemOptions
+  ) => {
+    return this.buildItem(rleSeed, options?.size);
+  };
 
-    const { parts, background } = this.utils.getParts(seed);
+  private buildItem = (
+    inputSeed: Seed<Image<Parts, BgColors>> | RLESeed<Image<Parts, BgColors>>,
+    size?: number
+  ) => {
+    const { seed, hasRLEParts } = this.utils.validateSeed(inputSeed);
+
+    const { parts, background } = this.utils.getItemParts(seed, hasRLEParts);
     const svg = buildSVG(parts, this.palette, background, size);
     const namedSeed = this.utils.seedToNamedSeed(seed);
 
@@ -73,7 +89,10 @@ export class Factory<Parts, BgColors> {
     /** Collects encoded data or color string for Seed
      * @param {Seed} seed
      */
-    getParts: (seed: Seed<Image<Parts, BgColors>>) => {
+    getItemParts: (
+      seed: Seed<Image<Parts, BgColors>>,
+      hasRLEParts: boolean
+    ) => {
       const parts = Object.entries(seed).filter(([part]) => {
         return part !== "background";
       });
@@ -81,8 +100,12 @@ export class Factory<Parts, BgColors> {
       return {
         parts: parts.map(([part, value]) => {
           const currentPart = part as keyof Parts;
-          const index = value as number;
-          return this.images[currentPart][index];
+          if (hasRLEParts && String(value).startsWith("0x")) {
+            return { filename: "custom", data: value as unknown as string };
+          } else {
+            const index = value as number;
+            return this.images[currentPart][index];
+          }
         }),
         background: this.bgcolors[seed.background],
       };
@@ -208,11 +231,11 @@ export class Factory<Parts, BgColors> {
     },
 
     /** Transform Seed into number[]
-     * @param {Seed} seed
+     * @param {Seed} inputSeed
      * @returns number[]
      */
-    seedToArraySeed: (seed: Seed<Image<Parts, BgColors>>): number[] => {
-      seed = this.utils.validateSeed(seed);
+    seedToArraySeed: (inputSeed: Seed<Image<Parts, BgColors>>): number[] => {
+      const { seed } = this.utils.validateSeed(inputSeed);
 
       const parts = Object.keys(this.images);
       const arr = [seed.background];
@@ -225,18 +248,21 @@ export class Factory<Parts, BgColors> {
     },
 
     /** Transform Seed into NamedSeed
-     * @param {Seed} seed
+     * @param {Seed} inputSeed
      * @returns NamedSeed
      */
     seedToNamedSeed: (
-      seed: Seed<Image<Parts, BgColors>>
+      inputSeed: Seed<Image<Parts, BgColors>>
     ): NamedSeed<Image<Parts, BgColors>> => {
-      seed = this.utils.validateSeed(seed);
+      const { seed } = this.utils.validateSeed(inputSeed);
 
       const parts = Object.entries(seed).map(([part, value]) => {
         if (part === "background") {
           return [part, "#" + this.bgcolors[value as number]];
+        } else if (String(value).startsWith("0x")) {
+          return [part, "custom"];
         }
+
         const image: EncodedImage =
           this.images[part as keyof Parts][value as number];
         return [part, image.filename];
@@ -246,12 +272,15 @@ export class Factory<Parts, BgColors> {
     },
 
     /** Validates Seed against factory data
-     * @param {Seed} seed
-     * @throws if Seed has unknown or missing keys, or item can't be found
+     * @param {Seed} inputSeed
+     * @throws if Seed has unknown or missing keys, or item otherwise can't be found
      */
-    validateSeed: (seed: Seed<Image<Parts, BgColors>>) => {
-      const seedParts = Object.keys(seed);
+    validateSeed: (
+      inputSeed: Seed<Image<Parts, BgColors>> | RLESeed<Image<Parts, BgColors>>
+    ) => {
+      const seedParts = Object.keys(inputSeed);
       const imageParts = ["background", ...Object.keys(this.images)];
+      let hasRLEParts = false;
 
       if (seedParts.length < imageParts.length) {
         const missingKeys = imageParts.filter(
@@ -264,13 +293,17 @@ export class Factory<Parts, BgColors> {
         );
       }
 
-      Object.entries(seed).forEach(([part, value]) => {
+      Object.entries(inputSeed).forEach(([part, value]) => {
         try {
           if (part === "background") {
             const color = this.bgcolors[value as number];
             if (!color) throw new Error();
           } else {
-            const image = this.images[part as keyof Parts][value as number];
+            let image;
+            if (String(value).startsWith("0x")) {
+              image = value as unknown as string;
+              hasRLEParts = true;
+            } else image = this.images[part as keyof Parts][value as number];
             if (!image) throw new Error();
           }
         } catch (err) {
@@ -282,11 +315,11 @@ export class Factory<Parts, BgColors> {
 
       let sortedSeedEntries: any[] = [];
       for (const part of imageParts) {
-        sortedSeedEntries.push([part, seed[part as keyof Parts]]);
+        sortedSeedEntries.push([part, inputSeed[part as keyof Parts]]);
       }
 
       const sortedSeed = Object.fromEntries(sortedSeedEntries);
-      return sortedSeed as Seed<Image<Parts, BgColors>>;
+      return { hasRLEParts, seed: sortedSeed as Seed<Image<Parts, BgColors>> };
     },
   };
 }
