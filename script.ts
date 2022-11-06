@@ -53,7 +53,7 @@ export const readConfigAndGenerateTypes = async (
 };
 
 export const createConfigFile = () => {
-  const template = `[[items]]\nname = 'Item Name'\nconfig_path ='/path_to_config_file'`;
+  const template = `[[items]]\nname = 'Item Name'\nconfig_path = '/path_to_config_file'`;
   writeFileSync("bolt.toml", template);
 };
 
