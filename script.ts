@@ -18,11 +18,15 @@ type ImageData = {
   images: { [key: string]: any[] };
 };
 
-const template = `export type {ITEM_NAME}Parts = {
-	**OBJECT_DEFINITIONS**
-};
+const template = `export type Named{ITEM_NAME}Seed = {ITEM_NAME}Parts & { background: {ITEM_NAME}BgColors };
+
+export type {ITEM_NAME}Seed = { [T in keyof Named{ITEM_NAME}Seed]: number };
+export type RLE{ITEM_NAME}Seed = { [T in keyof Named{ITEM_NAME}Seed]: number | string };
 
 export type {ITEM_NAME}BgColors = **BG_COLORS**;
+export type {ITEM_NAME}Parts = {
+	**OBJECT_DEFINITIONS**
+};
 
 **INDIVIDUAL_DEFINITIONS**
 `;
