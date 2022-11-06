@@ -28,7 +28,7 @@ type RLESeed<Image> = {
   [T in keyof Image]: number | string;
 };
 
-type ItemOptions = { size?: number };
+type ItemOptions = { size?: number; removeBg?: boolean };
 
 export class Factory<Parts, BgColors> {
   private bgcolors;
@@ -51,31 +51,33 @@ export class Factory<Parts, BgColors> {
     options?: ItemOptions
   ) => {
     const seed = this.utils.namedSeedToSeed(namedSeed);
-    return this.buildItem(seed, options?.size);
+    return this.buildItem(seed, options);
   };
 
   createItemFromSeed = (
     seed: Seed<Image<Parts, BgColors>>,
     options?: ItemOptions
   ) => {
-    return this.buildItem(seed, options?.size);
+    return this.buildItem(seed, options);
   };
 
   createItemFromRLESeed = (
     rleSeed: RLESeed<Image<Parts, BgColors>>,
     options?: ItemOptions
   ) => {
-    return this.buildItem(rleSeed, options?.size);
+    return this.buildItem(rleSeed, options);
   };
 
   private buildItem = (
     inputSeed: Seed<Image<Parts, BgColors>> | RLESeed<Image<Parts, BgColors>>,
-    size?: number
+    options?: ItemOptions
   ) => {
     const { seed, hasRLEParts } = this.utils.validateSeed(inputSeed);
 
     const { parts, background } = this.utils.getItemParts(seed, hasRLEParts);
-    const svg = buildSVG(parts, this.palette, background, size);
+    const bgColor = options?.removeBg ? "transparent" : background;
+
+    const svg = buildSVG(parts, this.palette, bgColor, options?.size);
     const namedSeed = this.utils.seedToNamedSeed(seed);
 
     return {
