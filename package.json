@@ -1,35 +1,24 @@
 {
   "license": "MIT",
-  "version": "0.0.1",
   "name": "@cloudnouns/factory",
+  "version": "0.1.0",
   "author": "Badu Blanc <badu@hey.com>",
   "repository": "git://github.com/cloudnouns/factory.git",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "type": "module",
-  "main": "./src/index.js",
-  "types": "./src/index.d.ts",
-  "bin": {
-    "bolt": "cli.js"
-  },
+  "main": "./factory.js",
+  "types": "./factory.d.ts",
   "scripts": {
     "watch": "tsc --watch",
-    "build": "rimraf ./dist && tsc && rm dist/cli.d.ts && chmod +x dist/cli.js && cp ./.npmrc dist/.npmrc",
-    "go": "ts-node-esm ./script.ts",
-    "try": "ts-node-esm ./api/src/index.ts",
-    "now": "yarn build && npx . init"
+    "build": "rimraf ./dist && tsc && cp package.json dist/package.json && cp readme.md dist/readme.md"
   },
   "devDependencies": {
+    "@cloudnouns/bolt": "^0.1.0",
     "@types/node": "^18.7.18",
-    "@types/rimraf": "^3.0.2",
-    "typescript": "^4.8.3",
-    "vite": "^3.1.3"
+    "rimraf": "^3.0.2",
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
-    "@ethersproject/solidity": "^5.7.0",
-    "@ltd/j-toml": "^1.35.2",
-    "rimraf": "^3.0.2"
+    "@ethersproject/solidity": "^5.7.0"
   }
 }

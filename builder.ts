@@ -1,4 +1,4 @@
-interface DecodedImage {
+type DecodedImage = {
   paletteIndex: number;
   bounds: {
     top: number;
@@ -7,7 +7,15 @@ interface DecodedImage {
     left: number;
   };
   rects: [length: number, colorIndex: number][];
-}
+};
+
+type SVGOptions = {
+  parts: { data: string }[];
+  palette: string[];
+  background: string;
+  viewbox: number[];
+  size?: number;
+};
 
 export const decodeImage = (image: string): DecodedImage => {
   const data = image.replace(/^0x/, "");
@@ -44,13 +52,17 @@ const getRectLength = (
     : remainingPixelsInLine;
 };
 
-export const buildSVG = (
-  parts: { data: string }[],
-  palette: string[],
-  background: string,
-  size = 320
-): string => {
-  let openingTag = `<svg width="${size}" height="${size}" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">`;
+export const buildSVG = ({
+  parts,
+  palette,
+  background,
+  viewbox,
+  size = 320,
+}: SVGOptions): string => {
+  let openingTag = `<svg viewBox="${viewbox.join(
+    " "
+  )}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">`;
+
   if (background !== "transparent") {
     openingTag += `<rect width="100%" height="100%" fill="#${background}" />`;
   }

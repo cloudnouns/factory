@@ -34,17 +34,23 @@ export class Factory<Parts, BgColors> {
   private bgcolors;
   private palette;
   private images;
+  private viewbox: number[] = [0, 0, 320, 320];
 
-  constructor(imageData: ImageData<Parts>) {
-    this.bgcolors = imageData.bgcolors;
+  constructor(imageData: ImageData<Parts>, viewbox?: number[]) {
     this.palette = imageData.palette;
     this.images = imageData.images;
+
+    if (!imageData.bgcolors.length) this.bgcolors = ["transparent"];
+    else this.bgcolors = imageData.bgcolors;
+
+    if (viewbox) this.viewbox = viewbox;
   }
 
   /** Create new item.
    * @param {Partial<NamedSeed>} [namedSeed]
    * @param {object} [options]
    * @param {number} [options.size]
+   * @param {boolean} [options.removeBg]
    */
   createItem = (
     namedSeed: Partial<Image<Parts, BgColors>> = {},
@@ -54,18 +60,17 @@ export class Factory<Parts, BgColors> {
     return this.buildItem(seed, options);
   };
 
+  /** Create new item from a seed.
+   * @param {Seed|RLESeed} seed
+   * @param {object} [options]
+   * @param {number} [options.size]
+   * @param {boolean} [options.removeBg]
+   */
   createItemFromSeed = (
-    seed: Seed<Image<Parts, BgColors>>,
+    seed: Seed<Image<Parts, BgColors>> | RLESeed<Image<Parts, BgColors>>,
     options?: ItemOptions
   ) => {
     return this.buildItem(seed, options);
-  };
-
-  createItemFromRLESeed = (
-    rleSeed: RLESeed<Image<Parts, BgColors>>,
-    options?: ItemOptions
-  ) => {
-    return this.buildItem(rleSeed, options);
   };
 
   private buildItem = (
@@ -73,22 +78,25 @@ export class Factory<Parts, BgColors> {
     options?: ItemOptions
   ) => {
     const { seed, hasRLEParts } = this.utils.validateSeed(inputSeed);
-
     const { parts, background } = this.utils.getItemParts(seed, hasRLEParts);
-    const bgColor = options?.removeBg ? "transparent" : background;
 
-    const svg = buildSVG(parts, this.palette, bgColor, options?.size);
-    const namedSeed = this.utils.seedToNamedSeed(seed);
+    const svg = buildSVG({
+      parts,
+      palette: this.palette,
+      background: options?.removeBg ? "transparent" : background,
+      size: options?.size,
+      viewbox: this.viewbox,
+    });
 
     return {
-      ...namedSeed,
+      ...this.utils.seedToNamedSeed(seed),
       seed,
       dataUrl: "data:image/svg+xml;base64," + btoa(svg),
     };
   };
 
   utils = {
-    /** Collects encoded data or color string for Seed
+    /** Collects background color and encoded image data for seed.
      * @param {Seed} seed
      */
     getItemParts: (
@@ -153,7 +161,7 @@ export class Factory<Parts, BgColors> {
       return seed;
     },
 
-    /** Generate a random Seed
+    /** Generate a random seed
      * @returns Seed
      */
     getRandomSeed: (): Seed<Image<Parts, BgColors>> => {
@@ -169,7 +177,7 @@ export class Factory<Parts, BgColors> {
       };
     },
 
-    /** Transform number[] into NamedSeed
+    /** Transforms number[] into NamedSeed
      * @param {number[]} arr
      * @returns NamedSeed
      */
@@ -180,7 +188,7 @@ export class Factory<Parts, BgColors> {
       return this.utils.seedToNamedSeed(seed);
     },
 
-    /** Transform number[] into Seed
+    /** Transforms number[] into Seed
      * @param {number[]} arr
      * @returns Seed
      */
@@ -190,7 +198,7 @@ export class Factory<Parts, BgColors> {
       return Object.fromEntries(entries);
     },
 
-    /** Transform NamedSeed into number[]
+    /** Transforms NamedSeed into number[]
      * @param {NamedSeed} namedSeed
      * @returns number[]
      */
@@ -203,7 +211,7 @@ export class Factory<Parts, BgColors> {
       return this.utils.seedToArraySeed(seed);
     },
 
-    /** Transform NamedSeed into Seed
+    /** Transforms NamedSeed into Seed
      * @param {NamedSeed} namedSeed
      * @returns Seed
      */
@@ -232,7 +240,7 @@ export class Factory<Parts, BgColors> {
       return seed;
     },
 
-    /** Transform Seed into number[]
+    /** Transforms Seed into number[]
      * @param {Seed} inputSeed
      * @returns number[]
      */
@@ -249,7 +257,7 @@ export class Factory<Parts, BgColors> {
       return arr;
     },
 
-    /** Transform Seed into NamedSeed
+    /** Transforms Seed into NamedSeed
      * @param {Seed} inputSeed
      * @returns NamedSeed
      */
@@ -273,9 +281,9 @@ export class Factory<Parts, BgColors> {
       return Object.fromEntries(parts);
     },
 
-    /** Validates Seed against factory data
+    /** Validates seed against factory data
      * @param {Seed} inputSeed
-     * @throws if Seed has unknown or missing keys, or item otherwise can't be found
+     * @throws if Seed has unknown or missing keys, or a part otherwise can't be found
      */
     validateSeed: (
       inputSeed: Seed<Image<Parts, BgColors>> | RLESeed<Image<Parts, BgColors>>

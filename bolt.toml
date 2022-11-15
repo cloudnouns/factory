@@ -2,19 +2,10 @@
 name = 'Noun'
 config_path ='./data/nouns.json'
 
-[items.options]
-viewbox = []
-
 [[items]]
 name = 'Lil Noun'
 config_path ='./data/lilnouns.json'
 
-[items.options]
-viewbox = []
-
 [[items]]
 name = 'Wizard'
 config_path ='./data/wizards.json'
-
-[items.options]
-viewbox = []
