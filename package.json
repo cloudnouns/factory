@@ -5,8 +5,8 @@
   "author": "Badu Blanc <badu@hey.com>",
   "repository": "git://github.com/cloudnouns/factory.git",
   "type": "module",
-  "main": "./factory.js",
-  "types": "./factory.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "scripts": {
     "watch": "tsc --watch",
     "build": "rimraf ./dist && tsc && cp package.json dist/package.json && cp readme.md dist/readme.md"

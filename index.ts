@@ -28,6 +28,7 @@ type RLESeed<Image> = {
   [T in keyof Image]: number | string;
 };
 
+type FactoryOptions = { viewbox?: number[] };
 type ItemOptions = { size?: number; removeBg?: boolean };
 
 export class Factory<Parts, BgColors> {
@@ -36,14 +37,14 @@ export class Factory<Parts, BgColors> {
   private images;
   private viewbox: number[] = [0, 0, 320, 320];
 
-  constructor(imageData: ImageData<Parts>, viewbox?: number[]) {
+  constructor(imageData: ImageData<Parts>, options?: FactoryOptions) {
     this.palette = imageData.palette;
     this.images = imageData.images;
 
     if (!imageData.bgcolors.length) this.bgcolors = ["transparent"];
     else this.bgcolors = imageData.bgcolors;
 
-    if (viewbox) this.viewbox = viewbox;
+    if (options?.viewbox) this.viewbox = options.viewbox;
   }
 
   /** Create new item.
