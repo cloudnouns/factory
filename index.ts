@@ -122,6 +122,43 @@ export class Factory<Parts, BgColors> {
       };
     },
 
+    /** Given a color string, returns the associated id (index) of the background
+     * @param {string} colorString
+     * @throws if color cannot be found
+     * @returns number
+     */
+    getBackgroundIdByColor: (colorString: string): number => {
+      const id = this.bgcolors.findIndex((color) => color === colorString);
+      if (id < 0) {
+        throw new Error(
+          `invalid_color. Unable to find background part with value: ${String(
+            colorString
+          )}`
+        );
+      }
+      return id;
+    },
+
+    /** Given a part and part name, returns the associated id (index) of the part
+     * @param {string} part
+     * @param {string} partName
+     * @throws if part cannot be found
+     * @returns number
+     */
+    getPartIdByName: (part: keyof Parts, partName: string): number => {
+      const id = this.images[part as keyof Parts].findIndex(
+        (p) => partName === p.filename
+      );
+      if (id < 0) {
+        throw new Error(
+          `invalid_part. Unable to find part for ${String(
+            part
+          )} with value: ${partName}`
+        );
+      }
+      return id;
+    },
+
     /** Emulates NounsSeeder.sol methodology for pseudorandomly selecting a part
      * @param {BigNumberish} id
      * @param {string} [blockHash]
