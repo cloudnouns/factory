@@ -32,10 +32,10 @@ type FactoryOptions = { viewbox?: number[] };
 type ItemOptions = { size?: number; removeBg?: boolean };
 
 export class Factory<Parts, BgColors> {
-  private bgcolors;
-  private palette;
-  private images;
-  private viewbox: number[] = [0, 0, 320, 320];
+  readonly bgcolors;
+  readonly palette;
+  readonly images;
+  readonly viewbox: number[] = [0, 0, 320, 320];
 
   constructor(imageData: ImageData<Parts>, options?: FactoryOptions) {
     this.palette = imageData.palette;
