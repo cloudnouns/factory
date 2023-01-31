@@ -32,8 +32,8 @@ type FactoryOptions = { viewbox?: number[] };
 type ItemOptions = { size?: number; removeBg?: boolean };
 
 export class Factory<Parts, BgColors> {
-  readonly bgcolors;
-  readonly palette;
+  readonly bgcolors: string[] = [];
+  readonly palette: string[] = [];
   readonly images;
   readonly viewbox: number[] = [0, 0, 320, 320];
 
